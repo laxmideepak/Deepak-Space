@@ -1,0 +1,40 @@
+---
+import '../styles/global.css';
+import { TAGS } from '../lib';
+
+interface Props { title?: string; description?: string }
+const { title, description = "Deepak Nelapatla, ML engineer. Notes on what I learn at work, life, and the games I play." } = Astro.props;
+const fullTitle = title ? `${title} · Deepak's Tokenizer` : "Deepak's Tokenizer";
+const path = Astro.url.pathname;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="alternate" type="application/rss+xml" title="Deepak's Tokenizer" href="/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="/" class="site-name">Deepak's Tokenizer</a>
+      <nav>
+        {TAGS.map((t) => <a href={`/tags/${t}`} aria-current={path.startsWith(`/tags/${t}`) ? 'page' : undefined}>{t}</a>)}
+        <a href="/about" aria-current={path.startsWith('/about') ? 'page' : undefined}>about</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <span>Deepak Nelapatla</span>
+      <a href="mailto:nelapatladeepak@gmail.com">nelapatladeepak@gmail.com</a>
+      <a href="/rss.xml">rss</a>
+    </footer>
+  </body>
+</html>

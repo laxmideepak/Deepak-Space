@@ -1,0 +1,15 @@
+{
+  "name": "notebook",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "astro": "^5.18.2",
+    "js-tiktoken": "^1.0.21"
+  }
+}

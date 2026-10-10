@@ -1,0 +1,18 @@
+---
+import { tokenCount, type Post } from '../lib';
+interface Props { posts: Post[] }
+const { posts } = Astro.props;
+---
+<ul class="post-list">
+  {posts.map((p) => (
+    <li>
+      <a href={`/posts/${p.id}`}>
+        <span class="post-title">{p.data.title}</span>
+        <span class="post-meta">
+          <span>{p.data.stage}</span>
+          <span>{tokenCount(p.body)}</span>
+        </span>
+      </a>
+    </li>
+  ))}
+</ul>

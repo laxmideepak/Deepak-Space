@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getPosts, TAGS } from '../../lib';
+
+export function getStaticPaths() {
+  return TAGS.map((tag) => ({ params: { tag } }));
+}
+
+const blurbs = {
+  learnings: 'Lessons from work, written down so I keep them.',
+  thoughts: 'Life, opinions, and things I am still figuring out.',
+  play: 'Cricket, badminton, volleyball, and whatever else I can get a game of.',
+};
+
+const { tag } = Astro.params as { tag: (typeof TAGS)[number] };
+const posts = (await getPosts()).filter((p) => p.data.tags.includes(tag));
+---
+<Base title={tag}>
+  <section class="hero">
+    <h1>{tag[0].toUpperCase() + tag.slice(1)}</h1>
+    <p class="intro">{blurbs[tag]}</p>
+  </section>
+  {posts.length ? <PostList posts={posts} /> : <p class="empty">No notes here yet.</p>}
+</Base>

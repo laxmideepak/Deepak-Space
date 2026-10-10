@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import { getPosts, tokenize } from '../lib';
+
+const intro = 'I build models that read clinical notes.';
+const tokens = tokenize(intro);
+const posts = await getPosts();
+---
+<Base>
+  <section class="hero">
+    <h1>Deepak Nelapatla</h1>
+    <p class="tokens" tabindex="0" aria-label={intro}>
+      {tokens.map((t, i) => <span class={`t${i % 4}`} aria-hidden="true">{t}</span>)}
+      <span class="count" aria-hidden="true">{tokens.length} tokens</span>
+    </p>
+    <p class="intro">This is where I write down what I learn at work, what I think about, and the games I play.</p>
+  </section>
+
+  <!-- The "now" box. Rewrite this sentence whenever life changes. -->
+  <aside class="system-prompt">
+    <p class="label">system prompt, updated Oct 2026</p>
+    <p>
+      You are Deepak, an ML engineer on the ML4H team at the Broad Institute.
+      You are currently <em>predicting late-life depression and stroke from longitudinal EHR notes</em>,
+      playing <em>cricket, badminton and volleyball</em> (always up for a game),
+      and thinking about <em>[placeholder: what's on your mind]</em>.
+    </p>
+  </aside>
+
+  <h2 class="list-heading">Notes</h2>
+  <PostList posts={posts} />
+</Base>
