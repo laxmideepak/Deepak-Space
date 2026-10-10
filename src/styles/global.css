@@ -161,3 +161,83 @@ footer a:hover { color: var(--text); }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* numbered section headings inside posts */
+.post-body { counter-reset: section; }
+.post-body h2 {
+  counter-increment: section;
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  font-size: 1.6rem;
+  margin: 3.5rem 0 1rem;
+}
+.post-body h2::before {
+  content: counter(section, decimal-leading-zero);
+  font: .8rem var(--mono);
+  color: var(--faint);
+  letter-spacing: 0;
+  transform: translateY(-.2em);
+}
+.post-body > p:first-child { font-size: 1.2rem; color: var(--muted); line-height: 1.6; }
+
+/* figures */
+.fig {
+  margin: 2rem 0 2.5rem;
+  padding: 1.25rem;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+.fig p { margin: 0; }
+.fig figcaption { margin-top: 1rem; font-size: .8rem; color: var(--faint); }
+
+/* fig: versus panels */
+.fig-versus { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.fig-panel { border: 1px solid var(--line); border-radius: 8px; padding: .9rem 1rem; }
+.fig-panel-title { color: var(--muted); font-size: .8rem; margin-bottom: .6rem !important; }
+.fig-model { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .35rem 0; color: var(--faint); }
+.fig-model.is-winner { color: var(--text); }
+.fig-badge { font: .7rem var(--mono); padding: .1rem .5rem; border-radius: 99px; background: var(--t2); color: var(--text); white-space: nowrap; }
+
+/* fig: agreement bar */
+.fig-bar { display: flex; height: 2.25rem; border-radius: 6px; overflow: hidden; font: .75rem var(--mono); }
+.fig-bar > div { display: flex; align-items: center; padding: 0 .6rem; }
+.fig-bar-agree { flex: 0 0 70%; background: var(--t0); color: var(--text); }
+.fig-bar-range { flex: 0 0 10%; background: repeating-linear-gradient(135deg, var(--t0) 0 4px, transparent 4px 8px); }
+.fig-bar-rest { flex: 1; background: var(--line); color: var(--muted); justify-content: flex-end; }
+.fig-bar-scale { display: flex; justify-content: space-between; margin-top: .4rem; font: .7rem var(--mono); color: var(--faint); }
+.fig-bar-scale span:nth-child(2) { margin-left: 62%; margin-right: auto; }
+.fig-note { margin-top: .9rem !important; color: var(--muted); }
+
+/* fig: decision tree */
+.fig-tree { display: flex; flex-direction: column; align-items: center; }
+.fig-node { border: 1px solid var(--line); border-radius: 8px; padding: .5rem .9rem; text-align: center; background: var(--bg); }
+.fig-node.is-root { color: var(--muted); }
+.fig-node.is-accent { background: var(--t2); border-color: transparent; }
+.fig-branches { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; width: 100%; margin-top: 1.1rem; position: relative; }
+.fig-branches::before { content: ''; position: absolute; top: -1.1rem; left: 25%; right: 25%; height: .55rem; border: 1px solid var(--faint); border-bottom: 0; border-radius: 6px 6px 0 0; }
+.fig-branch { display: flex; flex-direction: column; align-items: center; gap: .5rem; text-align: center; }
+.fig-edge { font-size: .8rem; color: var(--faint); }
+
+/* fig: note window */
+.fig-note-text { font: .8rem/1.8 var(--mono); }
+.fig-note-text .out { color: var(--faint); opacity: .55; }
+.fig-note-text .in { color: var(--text); background: var(--t0); border-radius: 3px; padding: .1rem .2rem; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.fig-note-text mark { background: var(--t1); color: var(--text); border-radius: 3px; padding: 0 .15rem; }
+.fig-legend { display: flex; gap: 1.25rem; margin: .9rem 0 1.1rem; font-size: .75rem; color: var(--muted); }
+.fig-legend span::before { content: ''; display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .4rem; vertical-align: -1px; }
+.key-in::before { background: var(--t0); }
+.key-out::before { background: var(--line); }
+.fig-cost { display: grid; gap: .45rem; }
+.fig-cost-row { display: grid; grid-template-columns: 6rem 1fr; align-items: center; gap: .75rem; font-size: .75rem; color: var(--muted); }
+.fig-cost-bar { height: .6rem; width: var(--w); background: var(--line); border-radius: 99px; }
+.fig-cost-bar.is-accent { background: var(--t2); }
+
+@media (max-width: 520px) {
+  .fig-versus, .fig-branches { grid-template-columns: 1fr; }
+  .fig-branches::before { display: none; }
+  .post-body h2 { font-size: 1.35rem; }
+}

@@ -21,6 +21,8 @@ const enc = new Tiktoken(o200k_base);
 export const tokenize = (text: string) => enc.encode(text).map((t) => enc.decode([t]));
 
 export function tokenCount(text = '') {
-  const n = enc.encode(text).length;
+  // Count the words people read, not the markup inside figures.
+  const prose = text.replace(/<figure[\s\S]*?<\/figure>/g, '');
+  const n = enc.encode(prose).length;
   return n < 1000 ? `${n} tokens` : `${(n / 1000).toFixed(1)}k tokens`;
 }

@@ -23,6 +23,6 @@ const { title, description, planted, tended, stage, tags } = post.data;
         <div><dt>Filed in</dt><dd>{tags.map((t) => <a href={`/tags/${t}`}>{t}</a>)}</dd></div>
       </dl>
     </header>
-    <div class="prose"><Content /></div>
+    <div class="prose post-body"><Content /></div>
   </article>
 </Base>
