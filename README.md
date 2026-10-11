@@ -57,6 +57,9 @@ This rewrites `src/data/inference.json`, the only thing the site reads.
 | `src/pages/try.astro` | Tokenizer playground + in-browser "can a model predict you?" |
 | `src/layouts/Base.astro` | Head, boot screen, `:` command line, plain mode |
 | `src/styles/global.css` | All styles |
+| `public/robots.txt` | Crawl rules, AI bot groups, Content Signals |
+| `src/pages/sitemap.xml.ts` | Sitemap, rebuilt on every deploy |
+| `src/pages/md/` + `middleware.ts` | Markdown version of every page, served for `Accept: text/markdown` |
 | `docs/research/` | Design research behind the site |
 
 Type `:` on any page for commands (`help`, `open`, `grep`, `temperature`, `plain`, `q`).
