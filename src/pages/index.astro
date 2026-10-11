@@ -1,13 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
-import Decode from '../components/Decode.astro';
-import inference from '../data/inference.json';
+import ChatTurn from '../components/ChatTurn.astro';
 import { getPosts } from '../lib';
 
 // The "now" box, written as the system prompt a model would get to play me.
 // Rewrite it whenever life changes, then rerun scripts/export_inference.py.
-// [text, emphasized?] pairs so the highlights and the exported prompt stay in sync.
+// [text, emphasized?] pairs; ChatTurn checks the joined text against the export.
 const SYSTEM: [string, boolean][] = [
   ['You are Deepak, an ML engineer on the ML4H team at the Broad Institute. You are currently ', false],
   ['predicting late-life depression and stroke from longitudinal EHR notes', true],
@@ -17,9 +16,6 @@ const SYSTEM: [string, boolean][] = [
   ['building consistency in life', true],
   ['.', false],
 ];
-if (SYSTEM.map(([s]) => s).join('') !== inference.system) {
-  throw new Error('System prompt changed since the last export. Run: python scripts/export_inference.py');
-}
 
 const REPLY = [
   'I build models that read clinical notes.',
@@ -29,15 +25,9 @@ const REPLY = [
 const posts = await getPosts();
 ---
 <Base>
-  <section class="hero chat" style={`--layers: ${inference.layers}`}>
+  <section class="hero">
     <h1>Deepak Nelapatla</h1>
-    <p class="chatml" aria-hidden="true">&lt;|im_start|&gt;system</p>
-    <p class="chat-system">
-      {SYSTEM.map(([s, em]) => (em ? <em>{s}</em> : s))}
-    </p>
-    <p class="chatml" aria-hidden="true"><span>&lt;|im_end|&gt;</span><span>updated Oct 2026</span></p>
-    <p class="chatml" aria-hidden="true">&lt;|im_start|&gt;assistant</p>
-    <Decode lines={REPLY} />
+    <ChatTurn system={SYSTEM} lines={REPLY} />
   </section>
 
   <h2 class="list-heading" id="notes">Notes</h2>

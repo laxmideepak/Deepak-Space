@@ -120,34 +120,46 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 .pills a:hover { border-color: var(--faint); color: var(--text); }
 
 /* homepage: a ChatML turn. The system prompt is the "now" box; the reply decodes. */
-.chat { margin-bottom: 3.5rem; }
-.chat h1 { margin-bottom: 1.25rem; }
+.chat { position: relative; margin: 1.25rem 0 3.5rem; }
 .chatml {
   display: flex; justify-content: space-between; gap: 1rem;
   margin: 0; font: .75rem/1.7 var(--mono); color: var(--hairline);
 }
-.chat-system { margin: .2rem 0 .3rem; font-size: .95rem; color: var(--muted); }
-.chat-system em { font-style: normal; color: var(--text); }
+.chat-system { margin: .2rem 0 .3rem; font-size: .95rem; color: var(--muted); cursor: default; }
+.st { border-radius: 2px; transition: background-color .25s ease; }
+.st.em { color: var(--text); }
+/* hover or focus the prompt: each token shaded by the model's surprise (bits / 20) */
+.chat-system:is(:hover, :focus) .st { background: rgb(96 165 250 / calc(var(--heat) * .55)); }
+.chat-system .st.active { background: rgb(96 165 250 / .6); color: var(--text); }
 /* prefill: the whole prompt brightens at once, one step per model layer (skipped on a KV hit) */
 @media (prefers-reduced-motion: no-preference) {
   html:not([data-kv="hit"]):not(.plain) .chat-system { animation: prefill .35s steps(var(--layers, 24)) .1s backwards; }
 }
 @keyframes prefill { from { color: var(--hairline); } }
 
-.reply { position: relative; width: fit-content; margin: .3rem 0 .2rem; font-size: 1.25rem; line-height: 1.6; cursor: default; }
-.dt { border-radius: 3px; transition: opacity .2s ease, background-color .25s ease; }
+.reply { position: relative; width: fit-content; margin: .1rem 0 .2rem; font-size: 1.25rem; line-height: 2.4; cursor: default; }
+.dt { position: relative; border-radius: 3px; transition: opacity .2s ease, background-color .25s ease; }
+/* the model's guess stays above each missed word, struck through */
+.dt[data-guess]::before {
+  content: attr(data-guess);
+  position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
+  font: .62rem/1 var(--mono); color: var(--faint); white-space: nowrap;
+  text-decoration: line-through; text-decoration-color: rgb(96 165 250 / .6);
+  opacity: 0; transition: opacity .3s ease; pointer-events: none;
+}
+.dt[data-guess].on::before { opacity: 1; }
 .dt.miss { text-decoration: underline dotted rgb(96 165 250 / .7); text-decoration-thickness: 1px; text-underline-offset: .28em; }
-.decode.decoding .dt:not(.on) { opacity: .35; } /* "prefill ink": faint, never invisible */
-.decode.decoding .dt.contested { opacity: .15; }
+.chat.decoding .dt:not(.on) { opacity: .35; } /* "prefill ink": faint, never invisible */
+.chat.decoding .dt.contested { opacity: .15; }
 .ghost { margin-right: .2em; color: var(--faint); font-style: italic; text-decoration: line-through; }
 @media (prefers-reduced-motion: no-preference) {
   .dt.landed { animation: landed .6s ease-out; }
 }
 @keyframes landed { from { background-color: rgb(96 165 250 / .35); } }
 /* once decoded: hover or focus shows the tokens, the active one gets the model's top-5 */
-.decode.done .reply:is(:hover, :focus) .dt { background: var(--tint); box-shadow: 1px 0 0 var(--bg); }
-.decode.done .reply .dt.active { background: rgb(96 165 250 / .35); }
-.legend { margin: .5rem 0 0; font: .75rem var(--mono); color: var(--faint); }
+.chat.done .reply:is(:hover, :focus) .dt { background: var(--tint); box-shadow: 1px 0 0 var(--bg); }
+.chat.done .reply .dt.active { background: rgb(96 165 250 / .35); }
+.legend { margin: .4rem 0 0; font: .75rem var(--mono); color: var(--faint); }
 .statusbar {
   display: flex; flex-wrap: wrap; gap: .3rem 1.25rem;
   margin: 1.25rem 0 0; padding: .45rem 0;
@@ -156,7 +168,9 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 }
 .statusbar b { font-weight: 400; color: var(--text); }
 .statusbar .tagline { margin-right: auto; color: var(--muted); }
-.decode { position: relative; }
+.replay { padding: 0; border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; }
+.replay:hover { color: var(--text); }
+.replay[hidden] { display: none; }
 .pop {
   position: absolute; z-index: 2; width: 18rem; padding: .7rem .85rem;
   background: var(--raised); border: 1px solid var(--line); border-radius: 8px;
@@ -178,7 +192,9 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 /* "no tokens, please": plain reading, no ChatML chrome or token styling */
 html.plain .chatml, html.plain .legend, html.plain .statusbar, html.plain .tokens .count { display: none; }
 html.plain .dt.miss { text-decoration: none; }
-html.plain .tokens > span[class^="t"], html.plain .decode .dt { background: none !important; box-shadow: none !important; }
+html.plain .dt[data-guess]::before { display: none; }
+html.plain .chat-system .st { background: none !important; }
+html.plain .tokens > span[class^="t"], html.plain .chat .dt { background: none !important; box-shadow: none !important; }
 
 /* post list */
 .list-heading { margin-top: 0; }

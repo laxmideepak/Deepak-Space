@@ -2,6 +2,1662 @@
  "model": "Qwen/Qwen2.5-0.5B-Instruct",
  "layers": 24,
  "system": "You are Deepak, an ML engineer on the ML4H team at the Broad Institute. You are currently predicting late-life depression and stroke from longitudinal EHR notes, playing cricket, badminton and volleyball (always up for a game), and thinking about building consistency in life.",
+ "system_tokens": [
+  {
+   "text": "You",
+   "p": 0.0004,
+   "bits": 11.25,
+   "hit": false,
+   "guess": "#",
+   "top5": [
+    [
+     "#",
+     0.0535
+    ],
+    [
+     "2",
+     0.0271
+    ],
+    [
+     "1",
+     0.0265
+    ],
+    [
+     " ",
+     0.0263
+    ],
+    [
+     "import",
+     0.0141
+    ]
+   ]
+  },
+  {
+   "text": " are",
+   "p": 0.752,
+   "bits": 0.41,
+   "hit": true,
+   "guess": " are",
+   "top5": [
+    [
+     " are",
+     0.752
+    ],
+    [
+     "'re",
+     0.0745
+    ],
+    [
+     " can",
+     0.0531
+    ],
+    [
+     " have",
+     0.0277
+    ],
+    [
+     " will",
+     0.0137
+    ]
+   ]
+  },
+  {
+   "text": " Deep",
+   "p": 0.0,
+   "bits": 21.18,
+   "hit": false,
+   "guess": " given",
+   "top5": [
+    [
+     " given",
+     0.2974
+    ],
+    [
+     " a",
+     0.2505
+    ],
+    [
+     " an",
+     0.2016
+    ],
+    [
+     " here",
+     0.1319
+    ],
+    [
+     " provided",
+     0.0216
+    ]
+   ]
+  },
+  {
+   "text": "ak",
+   "p": 0.8838,
+   "bits": 0.18,
+   "hit": true,
+   "guess": "ak",
+   "top5": [
+    [
+     "ak",
+     0.8838
+    ],
+    [
+     "ika",
+     0.0339
+    ],
+    [
+     "a",
+     0.0193
+    ],
+    [
+     " in",
+     0.0055
+    ],
+    [
+     "ai",
+     0.0033
+    ]
+   ]
+  },
+  {
+   "text": ",",
+   "p": 0.2351,
+   "bits": 2.09,
+   "hit": true,
+   "guess": ",",
+   "top5": [
+    [
+     ",",
+     0.2351
+    ],
+    [
+     ".",
+     0.0473
+    ],
+    [
+     " Sharma",
+     0.0386
+    ],
+    [
+     " Kumar",
+     0.035
+    ],
+    [
+     " Jain",
+     0.0305
+    ]
+   ]
+  },
+  {
+   "text": " an",
+   "p": 0.0884,
+   "bits": 3.5,
+   "hit": false,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.5517
+    ],
+    [
+     " an",
+     0.0884
+    ],
+    [
+     " the",
+     0.063
+    ],
+    [
+     " your",
+     0.0513
+    ],
+    [
+     " sharing",
+     0.0172
+    ]
+   ]
+  },
+  {
+   "text": " ML",
+   "p": 0.0,
+   "bits": 15.11,
+   "hit": false,
+   "guess": " experienced",
+   "top5": [
+    [
+     " experienced",
+     0.2126
+    ],
+    [
+     " AI",
+     0.0955
+    ],
+    [
+     " expert",
+     0.0892
+    ],
+    [
+     " aspiring",
+     0.0323
+    ],
+    [
+     " intelligent",
+     0.024
+    ]
+   ]
+  },
+  {
+   "text": " engineer",
+   "p": 0.0667,
+   "bits": 3.91,
+   "hit": false,
+   "guess": " model",
+   "top5": [
+    [
+     " model",
+     0.1878
+    ],
+    [
+     " expert",
+     0.0974
+    ],
+    [
+     " engineer",
+     0.0667
+    ],
+    [
+     "-driven",
+     0.0455
+    ],
+    [
+     " enthusiast",
+     0.0348
+    ]
+   ]
+  },
+  {
+   "text": " on",
+   "p": 0.0017,
+   "bits": 9.18,
+   "hit": false,
+   "guess": " with",
+   "top5": [
+    [
+     " with",
+     0.3552
+    ],
+    [
+     " who",
+     0.091
+    ],
+    [
+     ",",
+     0.0879
+    ],
+    [
+     ".",
+     0.0696
+    ],
+    [
+     " at",
+     0.0616
+    ]
+   ]
+  },
+  {
+   "text": " the",
+   "p": 0.2101,
+   "bits": 2.25,
+   "hit": false,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.6111
+    ],
+    [
+     " the",
+     0.2101
+    ],
+    [
+     " an",
+     0.0194
+    ],
+    [
+     " your",
+     0.013
+    ],
+    [
+     " mission",
+     0.0126
+    ]
+   ]
+  },
+  {
+   "text": " ML",
+   "p": 0.001,
+   "bits": 10.01,
+   "hit": false,
+   "guess": " verge",
+   "top5": [
+    [
+     " verge",
+     0.1728
+    ],
+    [
+     " quest",
+     0.0619
+    ],
+    [
+     " cutting",
+     0.0589
+    ],
+    [
+     " rise",
+     0.0389
+    ],
+    [
+     " path",
+     0.0305
+    ]
+   ]
+  },
+  {
+   "text": "4",
+   "p": 0.0114,
+   "bits": 6.45,
+   "hit": false,
+   "guess": " platform",
+   "top5": [
+    [
+     " platform",
+     0.0823
+    ],
+    [
+     " team",
+     0.0506
+    ],
+    [
+     " Research",
+     0.0239
+    ],
+    [
+     "-",
+     0.0195
+    ],
+    [
+     " Hub",
+     0.018
+    ]
+   ]
+  },
+  {
+   "text": "H",
+   "p": 0.0118,
+   "bits": 6.4,
+   "hit": false,
+   "guess": "All",
+   "top5": [
+    [
+     "All",
+     0.0828
+    ],
+    [
+     "U",
+     0.0568
+    ],
+    [
+     "ALL",
+     0.049
+    ],
+    [
+     "0",
+     0.0427
+    ],
+    [
+     "N",
+     0.0419
+    ]
+   ]
+  },
+  {
+   "text": " team",
+   "p": 0.224,
+   "bits": 2.16,
+   "hit": false,
+   "guess": " platform",
+   "top5": [
+    [
+     " platform",
+     0.4111
+    ],
+    [
+     " team",
+     0.224
+    ],
+    [
+     " project",
+     0.026
+    ],
+    [
+     "2",
+     0.0206
+    ],
+    [
+     " journey",
+     0.0148
+    ]
+   ]
+  },
+  {
+   "text": " at",
+   "p": 0.0585,
+   "bits": 4.1,
+   "hit": false,
+   "guess": ".",
+   "top5": [
+    [
+     ".",
+     0.5327
+    ],
+    [
+     ",",
+     0.1605
+    ],
+    [
+     " at",
+     0.0585
+    ],
+    [
+     " and",
+     0.0555
+    ],
+    [
+     " who",
+     0.0329
+    ]
+   ]
+  },
+  {
+   "text": " the",
+   "p": 0.0201,
+   "bits": 5.64,
+   "hit": false,
+   "guess": " Google",
+   "top5": [
+    [
+     " Google",
+     0.1131
+    ],
+    [
+     " Microsoft",
+     0.1129
+    ],
+    [
+     " Amazon",
+     0.1107
+    ],
+    [
+     " H",
+     0.0414
+    ],
+    [
+     " Alibaba",
+     0.0297
+    ]
+   ]
+  },
+  {
+   "text": " Broad",
+   "p": 0.0004,
+   "bits": 11.34,
+   "hit": false,
+   "guess": " company",
+   "top5": [
+    [
+     " company",
+     0.0692
+    ],
+    [
+     " Alibaba",
+     0.052
+    ],
+    [
+     " University",
+     0.044
+    ],
+    [
+     " AI",
+     0.0382
+    ],
+    [
+     " tech",
+     0.0137
+    ]
+   ]
+  },
+  {
+   "text": " Institute",
+   "p": 0.5305,
+   "bits": 0.91,
+   "hit": true,
+   "guess": " Institute",
+   "top5": [
+    [
+     " Institute",
+     0.5305
+    ],
+    [
+     "well",
+     0.0511
+    ],
+    [
+     " team",
+     0.043
+    ],
+    [
+     "band",
+     0.0387
+    ],
+    [
+     " Foundation",
+     0.034
+    ]
+   ]
+  },
+  {
+   "text": ".",
+   "p": 0.4973,
+   "bits": 1.01,
+   "hit": true,
+   "guess": ".",
+   "top5": [
+    [
+     ".",
+     0.4973
+    ],
+    [
+     ",",
+     0.1891
+    ],
+    [
+     " of",
+     0.1842
+    ],
+    [
+     " and",
+     0.0391
+    ],
+    [
+     " who",
+     0.0133
+    ]
+   ]
+  },
+  {
+   "text": " You",
+   "p": 0.1779,
+   "bits": 2.49,
+   "hit": true,
+   "guess": " You",
+   "top5": [
+    [
+     " You",
+     0.1779
+    ],
+    [
+     " I",
+     0.1599
+    ],
+    [
+     " Your",
+     0.1093
+    ],
+    [
+     " Write",
+     0.0552
+    ],
+    [
+     " Discuss",
+     0.0493
+    ]
+   ]
+  },
+  {
+   "text": " are",
+   "p": 0.3466,
+   "bits": 1.53,
+   "hit": true,
+   "guess": " are",
+   "top5": [
+    [
+     " are",
+     0.3466
+    ],
+    [
+     " have",
+     0.1503
+    ],
+    [
+     "'re",
+     0.0758
+    ],
+    [
+     "'ve",
+     0.0408
+    ],
+    [
+     " want",
+     0.0271
+    ]
+   ]
+  },
+  {
+   "text": " currently",
+   "p": 0.0137,
+   "bits": 6.19,
+   "hit": false,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.1507
+    ],
+    [
+     " passionate",
+     0.1074
+    ],
+    [
+     " an",
+     0.1062
+    ],
+    [
+     " the",
+     0.0393
+    ],
+    [
+     " here",
+     0.0258
+    ]
+   ]
+  },
+  {
+   "text": " predicting",
+   "p": 0.0002,
+   "bits": 12.02,
+   "hit": false,
+   "guess": " discussing",
+   "top5": [
+    [
+     " discussing",
+     0.1035
+    ],
+    [
+     " working",
+     0.0882
+    ],
+    [
+     " in",
+     0.0488
+    ],
+    [
+     " developing",
+     0.044
+    ],
+    [
+     " exploring",
+     0.0432
+    ]
+   ]
+  },
+  {
+   "text": " late",
+   "p": 0.0,
+   "bits": 17.22,
+   "hit": false,
+   "guess": " the",
+   "top5": [
+    [
+     " the",
+     0.3677
+    ],
+    [
+     " a",
+     0.0941
+    ],
+    [
+     " stock",
+     0.0314
+    ],
+    [
+     " outcomes",
+     0.0181
+    ],
+    [
+     " future",
+     0.0162
+    ]
+   ]
+  },
+  {
+   "text": "-life",
+   "p": 0.0454,
+   "bits": 4.46,
+   "hit": false,
+   "guess": "-stage",
+   "top5": [
+    [
+     "-stage",
+     0.0993
+    ],
+    [
+     "-night",
+     0.0979
+    ],
+    [
+     "-breaking",
+     0.0837
+    ],
+    [
+     "-life",
+     0.0454
+    ],
+    [
+     " onset",
+     0.0269
+    ]
+   ]
+  },
+  {
+   "text": " depression",
+   "p": 0.0112,
+   "bits": 6.48,
+   "hit": false,
+   "guess": " health",
+   "top5": [
+    [
+     " health",
+     0.1006
+    ],
+    [
+     " cognitive",
+     0.0983
+    ],
+    [
+     " outcomes",
+     0.097
+    ],
+    [
+     " Alzheimer",
+     0.0874
+    ],
+    [
+     " cancer",
+     0.0571
+    ]
+   ]
+  },
+  {
+   "text": " and",
+   "p": 0.0729,
+   "bits": 3.78,
+   "hit": false,
+   "guess": " in",
+   "top5": [
+    [
+     " in",
+     0.189
+    ],
+    [
+     " using",
+     0.1782
+    ],
+    [
+     ".",
+     0.1139
+    ],
+    [
+     ",",
+     0.0808
+    ],
+    [
+     " and",
+     0.0729
+    ]
+   ]
+  },
+  {
+   "text": " stroke",
+   "p": 0.0013,
+   "bits": 9.61,
+   "hit": false,
+   "guess": " have",
+   "top5": [
+    [
+     " have",
+     0.0839
+    ],
+    [
+     " its",
+     0.0615
+    ],
+    [
+     " anxiety",
+     0.0613
+    ],
+    [
+     " are",
+     0.0535
+    ],
+    [
+     " depression",
+     0.0219
+    ]
+   ]
+  },
+  {
+   "text": " from",
+   "p": 0.0076,
+   "bits": 7.05,
+   "hit": false,
+   "guess": " using",
+   "top5": [
+    [
+     " using",
+     0.1433
+    ],
+    [
+     " risk",
+     0.1136
+    ],
+    [
+     " in",
+     0.0977
+    ],
+    [
+     ".",
+     0.0957
+    ],
+    [
+     ",",
+     0.0537
+    ]
+   ]
+  },
+  {
+   "text": " longitudinal",
+   "p": 0.0068,
+   "bits": 7.2,
+   "hit": false,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.0959
+    ],
+    [
+     " the",
+     0.0584
+    ],
+    [
+     " MRI",
+     0.0419
+    ],
+    [
+     " medical",
+     0.0308
+    ],
+    [
+     " brain",
+     0.0239
+    ]
+   ]
+  },
+  {
+   "text": " E",
+   "p": 0.0002,
+   "bits": 12.24,
+   "hit": false,
+   "guess": " data",
+   "top5": [
+    [
+     " data",
+     0.5708
+    ],
+    [
+     " datasets",
+     0.0286
+    ],
+    [
+     " MRI",
+     0.0158
+    ],
+    [
+     " cohort",
+     0.0141
+    ],
+    [
+     " longitudinal",
+     0.0137
+    ]
+   ]
+  },
+  {
+   "text": "HR",
+   "p": 0.3465,
+   "bits": 1.53,
+   "hit": true,
+   "guess": "HR",
+   "top5": [
+    [
+     "HR",
+     0.3465
+    ],
+    [
+     "PI",
+     0.1073
+    ],
+    [
+     "CG",
+     0.0618
+    ],
+    [
+     "CO",
+     0.0438
+    ],
+    [
+     "MA",
+     0.0374
+    ]
+   ]
+  },
+  {
+   "text": " notes",
+   "p": 0.0001,
+   "bits": 13.26,
+   "hit": false,
+   "guess": " data",
+   "top5": [
+    [
+     " data",
+     0.8365
+    ],
+    [
+     "s",
+     0.0867
+    ],
+    [
+     " records",
+     0.0145
+    ],
+    [
+     " datasets",
+     0.0112
+    ],
+    [
+     " and",
+     0.0062
+    ]
+   ]
+  },
+  {
+   "text": ",",
+   "p": 0.0877,
+   "bits": 3.51,
+   "hit": false,
+   "guess": ".",
+   "top5": [
+    [
+     ".",
+     0.4716
+    ],
+    [
+     ",",
+     0.0877
+    ],
+    [
+     ".\n\n",
+     0.0854
+    ],
+    [
+     " and",
+     0.0755
+    ],
+    [
+     " using",
+     0.0439
+    ]
+   ]
+  },
+  {
+   "text": " playing",
+   "p": 0.0004,
+   "bits": 11.34,
+   "hit": false,
+   "guess": " and",
+   "top5": [
+    [
+     " and",
+     0.4048
+    ],
+    [
+     " using",
+     0.0944
+    ],
+    [
+     " with",
+     0.0453
+    ],
+    [
+     " a",
+     0.0267
+    ],
+    [
+     " which",
+     0.0244
+    ]
+   ]
+  },
+  {
+   "text": " cricket",
+   "p": 0.0001,
+   "bits": 13.39,
+   "hit": false,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.6372
+    ],
+    [
+     " the",
+     0.1058
+    ],
+    [
+     " an",
+     0.0651
+    ],
+    [
+     " on",
+     0.0293
+    ],
+    [
+     " with",
+     0.0224
+    ]
+   ]
+  },
+  {
+   "text": ",",
+   "p": 0.2641,
+   "bits": 1.92,
+   "hit": true,
+   "guess": ",",
+   "top5": [
+    [
+     ",",
+     0.2641
+    ],
+    [
+     " with",
+     0.1978
+    ],
+    [
+     " and",
+     0.1184
+    ],
+    [
+     " in",
+     0.0738
+    ],
+    [
+     " to",
+     0.0582
+    ]
+   ]
+  },
+  {
+   "text": " bad",
+   "p": 0.0,
+   "bits": 15.41,
+   "hit": false,
+   "guess": " and",
+   "top5": [
+    [
+     " and",
+     0.5872
+    ],
+    [
+     " playing",
+     0.0206
+    ],
+    [
+     " discussing",
+     0.0178
+    ],
+    [
+     " writing",
+     0.0149
+    ],
+    [
+     " solving",
+     0.0127
+    ]
+   ]
+  },
+  {
+   "text": "m",
+   "p": 0.9516,
+   "bits": 0.07,
+   "hit": true,
+   "guess": "m",
+   "top5": [
+    [
+     "m",
+     0.9516
+    ],
+    [
+     "ging",
+     0.0117
+    ],
+    [
+     "ger",
+     0.0063
+    ],
+    [
+     " jokes",
+     0.0035
+    ],
+    [
+     " m",
+     0.0027
+    ]
+   ]
+  },
+  {
+   "text": "inton",
+   "p": 0.9863,
+   "bits": 0.02,
+   "hit": true,
+   "guess": "inton",
+   "top5": [
+    [
+     "inton",
+     0.9863
+    ],
+    [
+     "ou",
+     0.0022
+    ],
+    [
+     "int",
+     0.0015
+    ],
+    [
+     "oke",
+     0.0011
+    ],
+    [
+     "alt",
+     0.0009
+    ]
+   ]
+  },
+  {
+   "text": " and",
+   "p": 0.1854,
+   "bits": 2.43,
+   "hit": false,
+   "guess": ",",
+   "top5": [
+    [
+     ",",
+     0.7857
+    ],
+    [
+     " and",
+     0.1854
+    ],
+    [
+     " with",
+     0.0055
+    ],
+    [
+     ".",
+     0.0037
+    ],
+    [
+     " or",
+     0.0028
+    ]
+   ]
+  },
+  {
+   "text": " volleyball",
+   "p": 0.0004,
+   "bits": 11.37,
+   "hit": false,
+   "guess": " playing",
+   "top5": [
+    [
+     " playing",
+     0.0892
+    ],
+    [
+     " reading",
+     0.0211
+    ],
+    [
+     " chess",
+     0.0205
+    ],
+    [
+     " other",
+     0.0195
+    ],
+    [
+     " watching",
+     0.0187
+    ]
+   ]
+  },
+  {
+   "text": " (",
+   "p": 0.0029,
+   "bits": 8.43,
+   "hit": false,
+   "guess": ".",
+   "top5": [
+    [
+     ".",
+     0.4645
+    ],
+    [
+     ",",
+     0.2114
+    ],
+    [
+     " with",
+     0.0498
+    ],
+    [
+     ".\n\n",
+     0.0494
+    ],
+    [
+     ".\n",
+     0.0403
+    ]
+   ]
+  },
+  {
+   "text": "always",
+   "p": 0.0003,
+   "bits": 11.65,
+   "hit": false,
+   "guess": "and",
+   "top5": [
+    [
+     "and",
+     0.0639
+    ],
+    [
+     "with",
+     0.057
+    ],
+    [
+     "among",
+     0.0413
+    ],
+    [
+     "all",
+     0.0365
+    ],
+    [
+     "as",
+     0.0362
+    ]
+   ]
+  },
+  {
+   "text": " up",
+   "p": 0.0022,
+   "bits": 8.83,
+   "hit": false,
+   "guess": " playing",
+   "top5": [
+    [
+     " playing",
+     0.099
+    ],
+    [
+     " in",
+     0.0922
+    ],
+    [
+     " on",
+     0.0499
+    ],
+    [
+     " with",
+     0.0418
+    ],
+    [
+     " keeping",
+     0.0228
+    ]
+   ]
+  },
+  {
+   "text": " for",
+   "p": 0.6752,
+   "bits": 0.57,
+   "hit": true,
+   "guess": " for",
+   "top5": [
+    [
+     " for",
+     0.6752
+    ],
+    [
+     " to",
+     0.1621
+    ],
+    [
+     "ping",
+     0.0569
+    ],
+    [
+     " and",
+     0.01
+    ],
+    [
+     "-to",
+     0.0098
+    ]
+   ]
+  },
+  {
+   "text": " a",
+   "p": 0.3459,
+   "bits": 1.53,
+   "hit": true,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.3459
+    ],
+    [
+     " any",
+     0.0666
+    ],
+    [
+     " challenge",
+     0.0631
+    ],
+    [
+     " an",
+     0.0416
+    ],
+    [
+     " challenges",
+     0.0362
+    ]
+   ]
+  },
+  {
+   "text": " game",
+   "p": 0.0579,
+   "bits": 4.11,
+   "hit": false,
+   "guess": " challenge",
+   "top5": [
+    [
+     " challenge",
+     0.4788
+    ],
+    [
+     " new",
+     0.1224
+    ],
+    [
+     " game",
+     0.0579
+    ],
+    [
+     " rematch",
+     0.032
+    ],
+    [
+     " match",
+     0.0241
+    ]
+   ]
+  },
+  {
+   "text": "),",
+   "p": 0.2944,
+   "bits": 1.76,
+   "hit": true,
+   "guess": "),",
+   "top5": [
+    [
+     "),",
+     0.2944
+    ],
+    [
+     ").",
+     0.2299
+    ],
+    [
+     ")",
+     0.1281
+    ],
+    [
+     "!",
+     0.0605
+    ],
+    [
+     ").\n\n",
+     0.0438
+    ]
+   ]
+  },
+  {
+   "text": " and",
+   "p": 0.5655,
+   "bits": 0.82,
+   "hit": true,
+   "guess": " and",
+   "top5": [
+    [
+     " and",
+     0.5655
+    ],
+    [
+     " playing",
+     0.0348
+    ],
+    [
+     " reading",
+     0.0235
+    ],
+    [
+     " watching",
+     0.0117
+    ],
+    [
+     " writing",
+     0.0108
+    ]
+   ]
+  },
+  {
+   "text": " thinking",
+   "p": 0.0012,
+   "bits": 9.74,
+   "hit": false,
+   "guess": " playing",
+   "top5": [
+    [
+     " playing",
+     0.0342
+    ],
+    [
+     " writing",
+     0.0292
+    ],
+    [
+     " discussing",
+     0.025
+    ],
+    [
+     " participating",
+     0.017
+    ],
+    [
+     " reading",
+     0.0167
+    ]
+   ]
+  },
+  {
+   "text": " about",
+   "p": 0.3943,
+   "bits": 1.34,
+   "hit": true,
+   "guess": " about",
+   "top5": [
+    [
+     " about",
+     0.3943
+    ],
+    [
+     " of",
+     0.2704
+    ],
+    [
+     " critically",
+     0.0309
+    ],
+    [
+     " out",
+     0.027
+    ],
+    [
+     " deeply",
+     0.0231
+    ]
+   ]
+  },
+  {
+   "text": " building",
+   "p": 0.0048,
+   "bits": 7.7,
+   "hit": false,
+   "guess": " the",
+   "top5": [
+    [
+     " the",
+     0.2986
+    ],
+    [
+     " your",
+     0.0665
+    ],
+    [
+     " how",
+     0.0504
+    ],
+    [
+     " a",
+     0.0402
+    ],
+    [
+     " future",
+     0.0284
+    ]
+   ]
+  },
+  {
+   "text": " consistency",
+   "p": 0.0,
+   "bits": 20.33,
+   "hit": false,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.6119
+    ],
+    [
+     " an",
+     0.1008
+    ],
+    [
+     " the",
+     0.0647
+    ],
+    [
+     " your",
+     0.0185
+    ],
+    [
+     " more",
+     0.015
+    ]
+   ]
+  },
+  {
+   "text": " in",
+   "p": 0.2618,
+   "bits": 1.93,
+   "hit": true,
+   "guess": " in",
+   "top5": [
+    [
+     " in",
+     0.2618
+    ],
+    [
+     " and",
+     0.138
+    ],
+    [
+     " with",
+     0.1303
+    ],
+    [
+     " into",
+     0.1219
+    ],
+    [
+     " between",
+     0.1006
+    ]
+   ]
+  },
+  {
+   "text": " life",
+   "p": 0.0005,
+   "bits": 11.06,
+   "hit": false,
+   "guess": " the",
+   "top5": [
+    [
+     " the",
+     0.1553
+    ],
+    [
+     " your",
+     0.0563
+    ],
+    [
+     " a",
+     0.056
+    ],
+    [
+     " our",
+     0.0472
+    ],
+    [
+     " ML",
+     0.0443
+    ]
+   ]
+  },
+  {
+   "text": ".",
+   "p": 0.2209,
+   "bits": 2.18,
+   "hit": true,
+   "guess": ".",
+   "top5": [
+    [
+     ".",
+     0.2209
+    ],
+    [
+     " skills",
+     0.1184
+    ],
+    [
+     " with",
+     0.0601
+    ],
+    [
+     ".\n\n",
+     0.0456
+    ],
+    [
+     " and",
+     0.0437
+    ]
+   ]
+  }
+ ],
+ "system_alpha": 0.32,
  "lines": [
   "I build models that read clinical notes.",
   "Off the clock: cricket, badminton, volleyball. Always up for a game."
