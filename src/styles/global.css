@@ -70,8 +70,8 @@ h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
   pointer-events: none;
 }
 .tokens:is(:hover, :focus, .is-lit) .count { opacity: 1; }
-/* touch screens can't hover, so show the count there */
-@media (hover: none) { .tokens .count { opacity: 1; } }
+/* touch screens (incl. touch laptops) can't rely on hover, so show the count there */
+@media (hover: none), (any-pointer: coarse) { .tokens .count { opacity: 1; } }
 /* tints arrive one after another, like a tokenizer emitting output; leaving clears at once */
 @media (prefers-reduced-motion: no-preference) {
   .tokens:is(:hover, :focus) > span[class^="t"] { transition-delay: calc(var(--i) * 35ms); }

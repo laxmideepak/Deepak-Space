@@ -1,20 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
-import { getPosts, tokenize } from '../lib';
+import Tokens from '../components/Tokens.astro';
+import { getPosts } from '../lib';
 
-const intro = 'I build models that read clinical notes.';
-const tokens = tokenize(intro);
 const posts = await getPosts();
 ---
 <Base>
   <section class="hero">
     <h1>Deepak Nelapatla</h1>
-    <p class="tokens" tabindex="0" style={`--n: ${tokens.length}`}>
-      <span class="sr-only">{intro}</span>
-      {tokens.map((t, i) => <span class={`t${i % 4}`} style={`--i: ${i}`} aria-hidden="true">{t}</span>)}
-      {' '}<span class="count" aria-hidden="true">{tokens.length} tokens</span>
-    </p>
+    <Tokens text="I build models that read clinical notes." />
     <p class="intro">This is where I write down what I learn at work, what I think about, and the games I play.</p>
   </section>
 

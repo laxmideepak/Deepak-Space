@@ -1,0 +1,13 @@
+---
+import { tokenize } from '../lib';
+
+// A line of text shown as its tokens. `lit` keeps the tints on (no hover needed).
+interface Props { text: string; lit?: boolean }
+const { text, lit = false } = Astro.props;
+const tokens = tokenize(text);
+---
+<p class:list={['tokens', { 'is-lit': lit }]} tabindex={lit ? undefined : 0} style={`--n: ${tokens.length}`}>
+  <span class="sr-only">{text}</span>
+  {tokens.map((t, i) => <span class={`t${i % 4}`} style={`--i: ${i}`} aria-hidden="true">{t}</span>)}
+  {' '}<span class="count" aria-hidden="true">{tokens.length} tokens</span>
+</p>
