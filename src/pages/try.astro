@@ -51,60 +51,52 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
   </section>
 
   <script>
-    type Encoder = { encode: (s: string) => number[]; decode: (ids: number[]) => string };
-
-    // ---------- Tokenize: js-tiktoken, the same library that counts tokens on every post ----------
+    // ---------- Tokenize: js-tiktoken in a worker, the same library that counts tokens on every post ----------
     const tokBox = document.querySelector<HTMLElement>('[data-tokenize]')!;
     const input = tokBox.querySelector<HTMLTextAreaElement>('#tok-input')!;
     const out = tokBox.querySelector<HTMLElement>('[data-tok-out]')!;
     const counts = tokBox.querySelector<HTMLElement>('[data-tok-counts]')!;
     const idsToggle = tokBox.querySelector<HTMLInputElement>('[data-tok-ids]')!;
     const idsOut = tokBox.querySelector<HTMLElement>('[data-tok-ids-out]')!;
-    const encoders: Partial<Record<'gpt2' | 'cl100k_base' | 'o200k_base', Encoder>> = {};
+    type TokReply = { text: string; pieces: string[]; ids: number[]; total: number; cl100k?: number; gpt2?: number };
+    let last: TokReply | undefined;
 
-    // GPT-4o's table first (it drives the tokens you see); the two comparison tables
-    // load once the page is idle, so they never compete with the first paint or typing.
-    async function loadEncoders() {
-      const { Tiktoken } = await import('js-tiktoken/lite');
-      encoders.o200k_base = new Tiktoken((await import('js-tiktoken/ranks/o200k_base')).default);
-      scheduleRender();
-      const idle = (window as any).requestIdleCallback ?? ((f: () => void) => setTimeout(f, 200));
-      idle(async () => {
-        encoders.cl100k_base = new Tiktoken((await import('js-tiktoken/ranks/cl100k_base')).default);
-        encoders.gpt2 = new Tiktoken((await import('js-tiktoken/ranks/gpt2')).default);
-        scheduleRender();
-      });
-    }
+    const tokWorker = new Worker(new URL('../scripts/tok.worker.ts', import.meta.url), { type: 'module' });
+    tokWorker.onmessage = (e: MessageEvent<TokReply>) => {
+      if (e.data.text !== input.value) return; // stale: a newer keystroke is on its way
+      last = e.data;
+      render();
+    };
+    tokWorker.onerror = () => { counts.textContent = 'Couldn’t load the tokenizers. Try reloading.'; };
 
-    // Retokenize at most once per frame, however fast someone types or pastes.
-    let frame = 0;
-    function scheduleRender() {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(renderTokens);
-    }
-
-    function renderTokens() {
-      const o200k = encoders.o200k_base;
-      if (!o200k) return;
-      const text = input.value;
-      const ids = o200k.encode(text);
-      out.replaceChildren(...ids.map((id, i) => {
+    function render() {
+      if (!last) return;
+      const frag = document.createDocumentFragment();
+      last.pieces.forEach((piece, i) => {
         const span = document.createElement('span');
         span.className = `t${i % 4}`;
-        span.textContent = o200k.decode([id]).replace(/\n/g, '↵\n');
-        return span;
-      }));
-      const n = (e?: Encoder) => (e ? e.encode(text).length : '…');
-      counts.textContent = `${ids.length} tokens in GPT-4o (o200k) · ${n(encoders.cl100k_base)} in GPT-4 (cl100k) · ${n(encoders.gpt2)} in GPT-2`;
-      idsOut.textContent = ids.join(' ');
+        span.textContent = piece.replace(/\n/g, '↵\n');
+        frag.append(span);
+      });
+      if (last.total > last.pieces.length) frag.append(` … +${last.total - last.pieces.length} more tokens`);
+      out.replaceChildren(frag);
+      const n = (v?: number) => (v === undefined ? '…' : v);
+      counts.textContent = `${last.total} tokens in GPT-4o (o200k) · ${n(last.cl100k)} in GPT-4 (cl100k) · ${n(last.gpt2)} in GPT-2`;
+      if (idsToggle.checked) idsOut.textContent = last.ids.join(' ') + (last.total > last.ids.length ? ' …' : '');
     }
 
+    // Coalesce bursts of typing; the worker only ever tokenizes the latest text.
+    let pending = 0;
+    const scheduleRender = () => {
+      clearTimeout(pending);
+      pending = window.setTimeout(() => tokWorker.postMessage(input.value), 16);
+    };
     input.addEventListener('input', scheduleRender);
-    idsToggle.addEventListener('change', () => { idsOut.hidden = !idsToggle.checked; });
+    idsToggle.addEventListener('change', () => { idsOut.hidden = !idsToggle.checked; render(); });
     for (const chip of tokBox.querySelectorAll<HTMLButtonElement>('[data-example]')) {
       chip.addEventListener('click', () => { input.value = chip.dataset.example!; scheduleRender(); input.focus(); });
     }
-    loadEncoders().catch(() => { counts.textContent = 'Couldn’t load the tokenizers. Try reloading.'; });
+    tokWorker.postMessage(input.value);
 
     // ---------- Predict: the homepage's model, teacher-forced on the visitor's sentence ----------
     const box = document.querySelector<HTMLElement>('[data-predict]')!;

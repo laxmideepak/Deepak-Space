@@ -14,8 +14,8 @@ Then I ran both on the job I actually needed done, summarizing real clinical not
 
 <figure class="fig fig-swap">
   <div class="swap-head">
-    <input type="checkbox" id="swap-eval" class="swap-toggle" aria-describedby="swap-caption" />
-    <label for="swap-eval" class="swap-switch"><span class="swap-a">public benchmarks</span><span class="swap-b">real clinical notes</span></label>
+    <input type="checkbox" id="swap-eval" class="swap-toggle" aria-label="Rank on real clinical notes instead of public benchmarks" aria-describedby="swap-caption" />
+    <label for="swap-eval" class="swap-switch"><span class="swap-a">benchmarks</span><span class="swap-b">clinical notes</span></label>
   </div>
   <ol class="swap-ranks">
     <li class="swap-qwen"><span class="swap-rank" aria-hidden="true"></span><span class="swap-name">Qwen 3.6</span><span class="fig-badge swap-badge-a">wins every task</span></li>

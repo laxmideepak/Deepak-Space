@@ -66,7 +66,7 @@ a:hover { text-decoration-color: var(--text); transition-duration: .12s; }
   padding-bottom: 4.5rem;
 }
 .site-name { font: 600 1.1rem/1 var(--display); letter-spacing: -.01em; text-decoration: none; }
-.site-header nav { display: flex; gap: 1.25rem; font-size: .875rem; }
+.site-header nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .875rem; }
 .site-header nav a { color: var(--muted); text-decoration: none; }
 .site-header nav a:hover, .site-header nav a[aria-current] { color: var(--text); }
 @media (pointer: coarse) { .site-header nav a { padding: .75rem .6rem; margin: -.75rem -.6rem; } } /* 44px touch targets, still clear of each other */
@@ -280,10 +280,12 @@ footer a:hover { color: var(--text); }
 }
 
 /* page transitions: only <main> crossfades, header and footer stay still */
-@view-transition { navigation: auto; }
 main { view-transition-name: page; }
-/* opacity only: a blur repaints the whole column every frame, which stutters on big and high-DPI screens */
+/* opacity only: a blur repaints the whole column every frame, which stutters on big and high-DPI screens.
+   Reduced motion gets no transition at all, so pages swap instantly. */
 @media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-group(*) { animation-duration: .18s; }
   ::view-transition-old(page) { animation: .12s ease-out both vt-out; }
   ::view-transition-new(page) { animation: .18s ease-out both vt-in; }
 }
@@ -449,7 +451,7 @@ main { view-transition-name: page; }
 .try h2 { margin-top: 0; }
 .try-hint { margin: 0 0 1rem; color: var(--muted); font-size: .95rem; text-wrap: pretty; }
 .try-label { display: block; margin: 1rem 0 .35rem; font: .75rem var(--mono); color: var(--faint); }
-.try-label span { color: var(--hairline); }
+.try-label span { color: var(--faint); }
 .try-input {
   display: block; width: 100%; padding: .65rem .8rem;
   background: var(--raised); color: var(--text);
@@ -461,7 +463,7 @@ main { view-transition-name: page; }
 .try-chips, .try-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0 0; }
 .chip {
   padding: .2rem .7rem; border: 1px solid var(--line); border-radius: 99px;
-  background: none; color: var(--muted); font: .75rem var(--mono); cursor: pointer;
+  background: none; color: var(--muted); font: .75rem var(--mono); cursor: pointer; text-decoration: none;
   transition: color .15s ease, border-color .15s ease;
 }
 .chip:hover { color: var(--text); border-color: var(--hairline); }
@@ -485,7 +487,7 @@ main { view-transition-name: page; }
 .legend a { color: var(--muted); }
 
 /* /notes: the packed context window + regex-window search */
-.notes-title { view-transition-name: argmax; width: fit-content; }
+.notes-title { width: fit-content; }
 .grep { margin-bottom: 3rem; }
 .grep-input { font-family: var(--mono); font-size: .95rem; }
 .grep-window { display: flex; justify-content: space-between; }
@@ -507,10 +509,10 @@ main { view-transition-name: page; }
 }
 .context li::after { /* a ruler: each note's share of the longest note */
   content: ''; position: absolute; left: 4.25rem; bottom: -1px; height: 1px;
-  width: calc((100% - 4.25rem) * var(--share, 0)); background: rgb(96 165 250 / .5);
+  width: calc((100% - 4.25rem) * var(--share, 0)); background: rgb(96 165 250 / .5); z-index: 1;
 }
 .context a { display: flex; justify-content: space-between; align-items: baseline; gap: 1.5rem; padding: .85rem 0 .2rem; text-decoration: none; }
-.ctx-pos { font: .7rem var(--mono); color: var(--hairline); text-align: right; }
+.ctx-pos { font: .7rem var(--mono); color: var(--faint); text-align: right; }
 .ctx-eot { grid-column: 2; padding-bottom: .6rem; font: .65rem var(--mono); color: var(--hairline); }
 .ctx-free { padding: .8rem 0; font: .75rem var(--mono); color: var(--faint); }
 .ctx-free::after { display: none; }
@@ -525,11 +527,12 @@ main { view-transition-name: page; }
 
 /* ARGMAX: the homepage "notes" chip morphs into the /notes heading */
 .chat-end { align-items: center; margin-top: .1rem; }
-.argmax { view-transition-name: argmax; color: var(--text); border-color: rgb(96 165 250 / .5); }
+.argmax { color: var(--text); border-color: rgb(96 165 250 / .5); }
+.chat.annealing .argmax { view-transition-name: argmax; }
 .argmax:hover { border-color: #60a5fa; }
 .chat.annealing .scored [data-i] { transition: none; } /* the anneal sets opacity every frame */
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-group(argmax) { animation-duration: .4s; animation-timing-function: cubic-bezier(.2, 0, 0, 1); }
+  ::view-transition-group(argmax) { animation-duration: .35s; animation-timing-function: cubic-bezier(.2, 0, 0, 1); }
 }
 
 /* : command line, a vim-style bar pinned to the bottom of the viewport */
@@ -570,6 +573,7 @@ html.still::view-transition-old(*), html.still::view-transition-new(*), html.sti
 .ctx-short { display: none; }
 @media (max-width: 400px) { .ctx-long { display: none; } .ctx-short { display: inline; } }
 html.plain .ctxline { display: none; }
+html:not(.plain):has(.ctxline) { scroll-padding-bottom: 3rem; }
 
 /* fig: eval swap (CSS only). Flip the eval set and the two models trade places. */
 .swap-head { margin-bottom: 1rem; }
@@ -578,16 +582,16 @@ html.plain .ctxline { display: none; }
   display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 99px;
   font: .75rem var(--mono); color: var(--faint); cursor: pointer; user-select: none;
 }
-.swap-switch span { padding: .25rem .75rem; border-radius: 99px; transition: background-color .2s ease, color .2s ease; }
+.swap-switch span { padding: .25rem .75rem; border-radius: 99px; white-space: nowrap; transition: background-color .2s ease, color .2s ease; }
 .swap-toggle:not(:checked) + .swap-switch .swap-a,
 .swap-toggle:checked + .swap-switch .swap-b { background: var(--line); color: var(--text); }
 .swap-toggle:focus-visible + .swap-switch { outline: 2px solid #60a5fa; outline-offset: 3px; }
-.swap-ranks { list-style: none; margin: 0; padding: 0; display: grid; }
+.swap-ranks { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.prose .swap-ranks, .prose .swap-ranks li { margin: 0; }
 .swap-ranks li {
   display: grid; grid-template-columns: 1.5rem 1fr auto; align-items: center; gap: .75rem;
   height: 2.75rem; padding: 0 .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
 }
-.swap-ranks li + li { margin-top: .5rem; }
 .swap-rank { font: .8rem var(--mono); color: var(--faint); }
 .swap-qwen .swap-rank::before { content: '1'; }
 .swap-gemma .swap-rank::before { content: '2'; }
@@ -608,3 +612,6 @@ html.plain .ctxline { display: none; }
 .list-heading { display: flex; justify-content: space-between; align-items: baseline; }
 .list-more { font: .75rem var(--mono); letter-spacing: 0; color: var(--faint); text-decoration: none; }
 .list-more:hover { color: var(--text); }
+
+/* iOS zooms into inputs smaller than 16px */
+@media (pointer: coarse) { .cmdline input, .grep-input { font-size: 1rem; } }

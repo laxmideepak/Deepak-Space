@@ -199,6 +199,7 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
       addEventListener('pointerdown', (e) => { if (!pop.hidden && !e.target.closest?.('.scored')) hide(); });
 
       replay.addEventListener('click', () => {
+        reply.focus({ preventScroll: true });
         // Rerun the prefill too: drop the KV hit, restart the CSS animation, decode again.
         html.dataset.kv = 'hit';
         void root.offsetWidth;
@@ -207,7 +208,7 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         start();
       });
 
-      // ARGMAX: Enter (or the notes chip) anneals the temperature. Each token's opacity is
+      // ARGMAX: the notes chip (click, or Enter when focused) anneals the temperature. Each token's opacity is
       // exp((log p - max) / T): as T falls, only the tokens the model was surest of survive,
       // then the chip morphs into the /notes heading (cross-document view transition).
       const chip = root.querySelector('[data-argmax]');
@@ -218,14 +219,20 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         annealing = true;
         finish();
         root.classList.add('annealing');
+        // Fetch /notes while the anneal plays (prerender in Chromium, prefetch elsewhere).
+        const rules = document.createElement('script');
+        rules.type = 'speculationrules';
+        rules.textContent = JSON.stringify({ prerender: [{ urls: [chip.href], eagerness: 'immediate' }] });
+        document.head.append(rules, Object.assign(document.createElement('link'), { rel: 'prefetch', href: chip.href }));
         hide();
         const spans = [...root.querySelectorAll('.scored [data-i]')];
         const scores = spans.map((el) => Math.log(Math.max(data[el.closest('.scored').dataset.set][+el.dataset.i].p, 1e-9)));
         const max = Math.max(...scores), t0 = performance.now(), D = 650;
         let gone = false;
-        const go = () => { if (!gone) { gone = true; location.href = chip.href; } };
+        const go = () => { if (!gone && annealing) { gone = true; location.href = chip.href; } };
         setTimeout(go, D + 250); // hidden tabs pause animation frames; still navigate
         const frame = (now) => {
+          if (!annealing) return; // restored from the back/forward cache meanwhile
           const k = Math.min((now - t0) / D, 1);
           const T = 8 * (1 - k) ** 2 + 0.01;
           spans.forEach((el, j) => { el.style.opacity = Math.exp((scores[j] - max) / T).toFixed(3); });
@@ -236,9 +243,6 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         requestAnimationFrame(frame);
       };
       chip.addEventListener('click', argmax);
-      addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && document.activeElement === document.body) argmax(e);
-      });
       // Coming back via the back button restores the page as it was.
       addEventListener('pageshow', (e) => {
         if (!e.persisted) return;

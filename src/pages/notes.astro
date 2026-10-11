@@ -17,15 +17,25 @@ const fmt = (n: number) => n.toLocaleString('en-US');
 <Base title="notes" description="Every note, packed into one context window, with a regex search that only reads the part of each note that matters.">
   <section class="hero">
     <h1 class="notes-title">Notes</h1>
+    <script is:inline>
+      // Morph the homepage "notes" chip into this heading only when arriving from the homepage.
+      addEventListener('pagereveal', (e) => {
+        const from = window.navigation?.activation?.from?.url;
+        if (e.viewTransition && from && new URL(from).pathname === '/') {
+          document.querySelector('.notes-title').style.viewTransitionName = 'argmax';
+        }
+      });
+    </script>
     <p class="intro">Every note, packed into one context window like a training sequence. Search it the way I search clinical notes: a regex finds the matches, and only a small window around each one gets read.</p>
   </section>
 
   <section class="grep" data-grep>
     <label class="try-label" for="grep-input">grep <span>(a regex, case-insensitive)</span></label>
     <input id="grep-input" class="try-input grep-input" type="search" spellcheck="false" autocomplete="off" placeholder="smok|tobacco" />
-    <label class="try-label grep-window" for="grep-window">window <span>± <output data-window-out>20</output> tokens around each match</span></label>
+    <label class="try-label grep-window" for="grep-window">window <span>± <span data-window-out>20</span> tokens around each match</span></label>
     <input id="grep-window" type="range" min="5" max="150" step="5" value="20" class="grep-range" />
-    <p class="grep-summary" data-summary aria-live="polite"></p>
+    <p class="grep-summary" data-summary></p>
+    <p class="sr-only" aria-live="polite" data-announce></p>
     <div class="grep-results" data-results></div>
   </section>
 
@@ -53,37 +63,102 @@ const fmt = (n: number) => n.toLocaleString('en-US');
     const box = document.querySelector<HTMLElement>('[data-grep]')!;
     const input = box.querySelector<HTMLInputElement>('#grep-input')!;
     const range = box.querySelector<HTMLInputElement>('#grep-window')!;
-    const windowOut = box.querySelector<HTMLOutputElement>('[data-window-out]')!;
+    const windowOut = box.querySelector<HTMLElement>('[data-window-out]')!;
     const summary = box.querySelector<HTMLElement>('[data-summary]')!;
+    const announce = box.querySelector<HTMLElement>('[data-announce]')!;
     const results = box.querySelector<HTMLElement>('[data-results]')!;
     let notes: Note[] | undefined;
     let loading: Promise<Note[]> | undefined;
 
-    const load = () => (loading ??= fetch('/notes.json').then((r) => r.json()).then((n) => (notes = n)));
-    input.addEventListener('focus', load, { once: true });
+    // Fetch the notes once; a failed fetch can be retried by typing again.
+    const load = () => (loading ??= fetch('/notes.json')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((n: Note[]) => (notes = n), (err) => {
+        loading = undefined;
+        setSummary('couldn’t load notes · type to retry');
+        throw err;
+      }));
+    input.addEventListener('focus', () => load().catch(() => {}), { once: true });
 
-    // Text fragment for a deep link that scrolls to and highlights the match.
-    const fragment = (text: string) =>
-      `#:~:text=${encodeURIComponent(text.trim()).replace(/-/g, '%2D').replace(/,/g, '%2C').replace(/&/g, '%26')}`;
+    // Screen readers hear the result once typing pauses, not on every keystroke.
+    let sayTimer = 0;
+    function setSummary(text: string, saved?: number) {
+      summary.textContent = text;
+      if (saved === undefined) summary.style.removeProperty('--saved');
+      else summary.style.setProperty('--saved', `${saved}%`);
+      clearTimeout(sayTimer);
+      sayTimer = window.setTimeout(() => { announce.textContent = text; }, 600);
+    }
 
-    function search() {
+    // Matching runs in a throwaway worker with a time limit, so a backtracking regex
+    // (or a crafted ?q= link) can't freeze the page.
+    const workerUrl = URL.createObjectURL(new Blob([
+      "onmessage=e=>{const[q,texts]=e.data;const re=new RegExp(q,'gi');" +
+      "postMessage(texts.map(t=>[...t.matchAll(re)].filter(m=>m[0]).map(m=>[m.index,m.index+m[0].length])))}",
+    ], { type: 'text/javascript' }));
+    let worker: Worker | undefined;
+    function matchAll(query: string, texts: string[]): Promise<[number, number][][]> {
+      worker?.terminate(); // a newer keystroke cancels the older run
+      const w = (worker = new Worker(workerUrl));
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => { w.terminate(); reject(new Error('timeout')); }, 400);
+        w.onmessage = (e) => { clearTimeout(timer); w.terminate(); resolve(e.data); };
+        w.onerror = (e) => { clearTimeout(timer); w.terminate(); reject(e); };
+        w.postMessage([query, texts]);
+      });
+    }
+
+    // Text fragment deep link: whole words, anchored by a few neighbouring words on the same line.
+    const enc = (t: string) => encodeURIComponent(t).replace(/[-,&]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+    // Context must be contiguous page text. The page curls quotes, so stop at the first quoted word.
+    const hasQuote = (w: string) => /['"‘’“”]/.test(w);
+    const words = (t: string) => t.split(/\s+/).filter(Boolean);
+    function fragment(text: string, [a0, b0]: [number, number]) {
+      const a = a0 - /\w*$/.exec(text.slice(0, a0))![0].length;
+      const b = b0 + /^\w*/.exec(text.slice(b0))![0].length;
+      const start = Math.max(0, a - 40), stop = Math.min(text.length, b + 40);
+      const before = words(text.slice(start, a).split('\n').pop()!);
+      const after = words(text.slice(b, stop).split('\n')[0]);
+      // Drop words the 40-character slice cut in half (fragments only match whole words).
+      if (start > 0 && /\w/.test(text[start - 1]) && before.length && !/\n/.test(text.slice(start, a))) before.shift();
+      if (stop < text.length && /\w/.test(text[stop]) && after.length && !/\n/.test(text.slice(b, stop))) after.pop();
+      before.splice(0, Math.max(0, before.length - 3));
+      after.splice(3);
+      const cutPre = before.findLastIndex(hasQuote), cutSuf = after.findIndex(hasQuote);
+      const pre = before.slice(cutPre + 1).join(' ');
+      const suf = (cutSuf === -1 ? after : after.slice(0, cutSuf)).join(' ');
+      return `#:~:text=${pre ? `${enc(pre)}-,` : ''}${enc(text.slice(a, b))}${suf ? `,-${enc(suf)}` : ''}`;
+    }
+
+    let generation = 0;
+    async function search() {
+      const run = ++generation;
       const W = Number(range.value);
       windowOut.textContent = String(W);
-      const query = input.value.trim();
+      // The page shows curly quotes; the notes are stored with straight ones.
+      const query = input.value.trim().replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
       results.replaceChildren();
-      if (!query) { summary.textContent = ''; return; }
-      if (!notes) { summary.textContent = 'loading notes…'; load().then(search); return; }
-      let re: RegExp;
+      if (!query) { setSummary(''); return; }
+      if (!notes) { setSummary('loading notes…'); load().then(search, () => {}); return; }
       try {
-        re = new RegExp(query, 'gi');
+        new RegExp(query, 'gi');
       } catch (err) {
-        summary.textContent = `re.error: ${(err as Error).message.replace(/^Invalid regular expression: \/.*\/[a-z]*: /, '').toLowerCase()}`;
+        setSummary(`re.error: ${(err as Error).message.replace(/^Invalid regular expression: \/.*\/[a-z]*: /, '').toLowerCase()}`);
         return;
       }
+      const texts = notes.map((n) => n.pieces.join(''));
+      let allMatches: [number, number][][];
+      try {
+        allMatches = await matchAll(query, texts);
+      } catch {
+        if (run === generation) setSummary('re.error: pattern took too long (catastrophic backtracking?)');
+        return;
+      }
+      if (run !== generation) return; // a newer search started meanwhile
 
       let hits = 0, sent = 0, total = 0, matched = 0;
-      for (const note of notes) {
-        const text = note.pieces.join('');
+      notes.forEach((note, k) => {
+        const text = texts[k];
         total += note.pieces.length;
         // Character offset where each token starts, to map a match back to tokens.
         const starts: number[] = [];
@@ -96,24 +171,21 @@ const fmt = (n: number) => n.toLocaleString('en-US');
         };
         // Merge overlapping ±W windows around every match.
         const windows: { from: number; to: number; marks: [number, number][] }[] = [];
-        for (const m of text.matchAll(re)) {
-          if (!m[0]) continue;
+        for (const [a, b] of allMatches[k]) {
           hits++;
-          const first = tokenAt(m.index!), last = tokenAt(m.index! + m[0].length - 1);
-          const from = Math.max(0, first - W), to = Math.min(note.pieces.length - 1, last + W);
+          const from = Math.max(0, tokenAt(a) - W), to = Math.min(note.pieces.length - 1, tokenAt(b - 1) + W);
           const prev = windows[windows.length - 1];
-          if (prev && from <= prev.to + 1) { prev.to = Math.max(prev.to, to); prev.marks.push([m.index!, m.index! + m[0].length]); }
-          else windows.push({ from, to, marks: [[m.index!, m.index! + m[0].length]] });
+          if (prev && from <= prev.to + 1) { prev.to = Math.max(prev.to, to); prev.marks.push([a, b]); }
+          else windows.push({ from, to, marks: [[a, b]] });
         }
-        if (!windows.length) continue;
+        if (!windows.length) return;
         matched++;
         const article = document.createElement('article');
         article.className = 'grep-hit';
         const head = document.createElement('a');
         head.className = 'grep-title';
         head.textContent = note.title;
-        const firstMark = windows[0].marks[0];
-        head.href = `/posts/${note.id}${fragment(text.slice(firstMark[0], firstMark[1]))}`;
+        head.href = `/posts/${note.id}${fragment(text, windows[0].marks[0])}`;
         article.append(head);
         for (const w of windows) {
           sent += w.to - w.from + 1;
@@ -137,25 +209,24 @@ const fmt = (n: number) => n.toLocaleString('en-US');
           article.append(snippet);
         }
         results.append(article);
-      }
-      if (!hits) { summary.textContent = `0 hits · nothing sent · 0 / ${total} tok`; return; }
+      });
+      if (!hits) { setSummary(`0 hits · nothing sent · 0 / ${total} tok`); return; }
       const saved = 100 * (1 - sent / total);
-      summary.textContent = `${hits} hit${hits === 1 ? '' : 's'} in ${matched} note${matched === 1 ? '' : 's'} · sent ${sent} / ${total} tok · saved ${saved.toFixed(1)}%`;
-      summary.style.setProperty('--saved', `${saved}%`);
+      setSummary(`${hits} hit${hits === 1 ? '' : 's'} in ${matched} note${matched === 1 ? '' : 's'} · sent ${sent} / ${total} tok · saved ${saved.toFixed(1)}%`, saved);
       if (W >= 150 && saved < 30) {
-        const note = document.createElement('p');
-        note.className = 'grep-aside';
-        note.textContent = 'My notes are short, so a ±150 window reads most of them. On a 3,000-token clinical note the same window saves far more.';
-        results.append(note);
+        const aside = document.createElement('p');
+        aside.className = 'grep-aside';
+        aside.textContent = 'My notes are short, so a ±150 window reads most of them. On a 3,000-token clinical note the same window saves far more.';
+        results.append(aside);
       }
     }
 
-    let frame = 0;
-    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(search); };
+    let pendingSearch = 0;
+    const schedule = () => { clearTimeout(pendingSearch); pendingSearch = window.setTimeout(() => { search(); }, 16); };
     input.addEventListener('input', schedule);
     range.addEventListener('input', schedule);
     // Arriving with ?q= (e.g. from the : command line) runs the search straight away.
     const q = new URLSearchParams(location.search).get('q');
-    if (q) { input.value = q; load().then(search); }
+    if (q) { input.value = q; load().then(search, () => {}); }
   </script>
 </Base>

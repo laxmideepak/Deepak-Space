@@ -27,11 +27,12 @@ export const tokenize = (text: string) => enc.encode(text).map((t) => enc.decode
 export function plainText(markdown = '') {
   return markdown
     .replace(/<figure[\s\S]*?<\/figure>/g, '')
-    .replace(/<[^>]+>/g, '')
+    .replace(/^```.*$/gm, '') // code fence lines
+    .replace(/<\/?[a-z][a-z0-9-]*(?:\s[^>]*)?\/?>/gi, '') // real tags only, so "p < 0.05" survives
     .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // links and images keep their text
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^\s*(?:[-*+]|\d+\.)\s+/gm, '')
-    .replace(/[*_`]/g, '')
+    .replace(/[*`]|(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9])/g, '') // emphasis, but keep snake_case
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
