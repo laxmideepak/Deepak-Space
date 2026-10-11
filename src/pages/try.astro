@@ -21,7 +21,7 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
     <p class="try-chips">
       {examples.map((e) => <button type="button" class="chip" data-example={e}>{e}</button>)}
     </p>
-    <p class="tokens is-lit try-tokens" aria-hidden="true" data-tok-out></p>
+    <p class="tokens try-tokens" aria-hidden="true" data-tok-out></p>
     <p class="try-counts" data-tok-counts aria-live="polite">loading tokenizers…</p>
     <label class="try-check"><input type="checkbox" data-tok-ids /> show token ids</label>
     <p class="try-ids" data-tok-ids-out hidden></p>

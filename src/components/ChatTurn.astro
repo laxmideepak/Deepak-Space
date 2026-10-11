@@ -258,6 +258,7 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         annealing = false;
         root.classList.remove('annealing');
         root.querySelectorAll('.scored [data-i]').forEach((el) => { el.style.opacity = ''; });
+        document.querySelectorAll('.argmax-canvas').forEach((c) => c.remove());
         state.textContent = `DONE ${total} tok`;
       });
 
@@ -368,7 +369,6 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         };
         requestAnimationFrame(draw);
       }
-      addEventListener('pageshow', (e) => { if (e.persisted) document.querySelectorAll('.argmax-canvas').forEach((c) => c.remove()); });
 
       if (still() || kv) finish();
       else start();

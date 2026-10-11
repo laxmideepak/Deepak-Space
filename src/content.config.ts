@@ -9,7 +9,7 @@ const posts = defineCollection({
     planted: z.coerce.date(),
     tended: z.coerce.date().optional(),
     stage: z.enum(['seedling', 'budding', 'evergreen']),
-    tags: z.array(z.enum(['learnings', 'thoughts', 'play'])),
+    tags: z.array(z.enum(['learnings', 'thoughts'])),
   }),
 });
 

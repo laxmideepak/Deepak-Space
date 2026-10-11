@@ -4,7 +4,7 @@ import o200k_base from 'js-tiktoken/ranks/o200k_base';
 
 export type Post = CollectionEntry<'posts'>;
 
-export const TAGS = ['learnings', 'thoughts', 'play'] as const;
+export const TAGS = ['learnings', 'thoughts'] as const;
 
 const lastTouched = (p: Post) => (p.data.tended ?? p.data.planted).getTime();
 

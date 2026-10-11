@@ -14,7 +14,7 @@ const rows = posts.map((p) => {
 const used = position;
 const fmt = (n: number) => n.toLocaleString('en-US');
 ---
-<Base title="notes" description="Every note, packed into one context window, with a regex search that only reads the part of each note that matters.">
+<Base title="notes" description="Every note, packed into one context window, and a regex search over the whole site that only reads the part that matters.">
   <section class="hero">
     <h1 class="notes-title">Notes</h1>
     <script is:inline>
@@ -26,11 +26,11 @@ const fmt = (n: number) => n.toLocaleString('en-US');
         }
       });
     </script>
-    <p class="intro">Every note, packed into one context window like a training sequence. Search it the way I search clinical notes: a regex finds the matches, and only a small window around each one gets read.</p>
+    <p class="intro">Every note, packed into one context window like a training sequence. Search the whole site the way I search clinical notes: a regex finds the matches, and only a small window around each one gets read.</p>
   </section>
 
   <section class="grep" data-grep>
-    <label class="try-label" for="grep-input">grep <span>(a regex, case-insensitive)</span></label>
+    <label class="try-label" for="grep-input">grep the whole site <span>(a regex, case-insensitive)</span></label>
     <input id="grep-input" class="try-input grep-input" type="search" spellcheck="false" autocomplete="off" placeholder="smok|tobacco" />
     <label class="try-label grep-window" for="grep-window">window <span>± <span data-window-out>20</span> tokens around each match</span></label>
     <input id="grep-window" type="range" min="5" max="150" step="5" value="20" class="grep-range" />
@@ -58,7 +58,7 @@ const fmt = (n: number) => n.toLocaleString('en-US');
   <p class="sr-only">{rows.length} notes, {fmt(used)} tokens in total.</p>
 
   <script>
-    type Note = { id: string; title: string; pieces: string[] };
+    type Note = { url: string; title: string; pieces: string[] };
 
     const box = document.querySelector<HTMLElement>('[data-grep]')!;
     const input = box.querySelector<HTMLInputElement>('#grep-input')!;
@@ -185,7 +185,7 @@ const fmt = (n: number) => n.toLocaleString('en-US');
         const head = document.createElement('a');
         head.className = 'grep-title';
         head.textContent = note.title;
-        head.href = `/posts/${note.id}${fragment(text, windows[0].marks[0])}`;
+        head.href = `${note.url}${fragment(text, windows[0].marks[0])}`;
         article.append(head);
         for (const w of windows) {
           sent += w.to - w.from + 1;
@@ -212,11 +212,11 @@ const fmt = (n: number) => n.toLocaleString('en-US');
       });
       if (!hits) { setSummary(`0 hits · nothing sent · 0 / ${total} tok`); return; }
       const saved = 100 * (1 - sent / total);
-      setSummary(`${hits} hit${hits === 1 ? '' : 's'} in ${matched} note${matched === 1 ? '' : 's'} · sent ${sent} / ${total} tok · saved ${saved.toFixed(1)}%`, saved);
+      setSummary(`${hits} hit${hits === 1 ? '' : 's'} in ${matched} page${matched === 1 ? '' : 's'} · sent ${sent} / ${total} tok · saved ${saved.toFixed(1)}%`, saved);
       if (W >= 150 && saved < 30) {
         const aside = document.createElement('p');
         aside.className = 'grep-aside';
-        aside.textContent = 'My notes are short, so a ±150 window reads most of them. On a 3,000-token clinical note the same window saves far more.';
+        aside.textContent = 'My pages are short, so a ±150 window reads most of them. On a 3,000-token clinical note the same window saves far more.';
         results.append(aside);
       }
     }

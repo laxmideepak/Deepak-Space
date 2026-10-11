@@ -21,6 +21,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* beats any display rule below */
 html { -webkit-font-smoothing: antialiased; scrollbar-gutter: stable; }
 body {
   margin: 0;
@@ -81,37 +82,10 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 /* hero + tokenized intro */
 .hero { margin-bottom: 3rem; }
 .intro { font-size: 1.125rem; color: var(--muted); max-width: 34rem; margin: 0; }
-.tokens { font-size: 1.25rem; margin: 0 0 .4rem; cursor: default; width: fit-content; }
-.tokens > span[class^="t"] { border-radius: 3px; transition: background-color .25s ease, box-shadow .25s ease; }
+.tokens { font-size: 1.25rem; margin: 0 0 .4rem; width: fit-content; }
+.tokens > span[class^="t"] { border-radius: 3px; background: var(--tint); box-shadow: 1px 0 0 var(--bg); }
 .t0 { --tint: var(--t0); } .t1 { --tint: var(--t1); } .t2 { --tint: var(--t2); } .t3 { --tint: var(--t3); }
-.tokens:is(:hover, :focus, .is-lit) > span[class^="t"] { background: var(--tint); box-shadow: 1px 0 0 var(--bg); }
-.count {
-  user-select: none;
-  font: .75rem var(--mono);
-  color: var(--faint);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity .25s ease;
-  pointer-events: none;
-}
-.tokens:is(:hover, :focus, .is-lit) .count { opacity: 1; }
-/* with a mouse, the token under the pointer stands alone, right away (no stream delay) */
-@media (hover: hover) and (pointer: fine) {
-  .tokens:has(> span[class^="t"]:hover) > span[class^="t"] { transition-delay: 0s; }
-  .tokens:has(> span[class^="t"]:hover) > span[class^="t"]:not(:hover) { background: transparent; }
-}
-/* touch screens: the line paints tinted, then the tints settle left to right */
-@media (hover: none) and (prefers-reduced-motion: no-preference) {
-  .tokens:not(.is-lit) > span[class^="t"] { animation: settle .8s ease-out calc(.35s + var(--i) * 45ms) backwards; }
-}
-@keyframes settle { from { background-color: var(--tint); } }
-/* touch screens (incl. touch laptops) can't rely on hover, so show the count there */
-@media (hover: none), (any-pointer: coarse) { .tokens .count { opacity: 1; } }
-/* tints arrive one after another, like a tokenizer emitting output; leaving clears at once */
-@media (prefers-reduced-motion: no-preference) {
-  .tokens:is(:hover, :focus) > span[class^="t"] { transition-delay: calc(var(--i) * 35ms); }
-  .tokens:is(:hover, :focus) .count { transition-delay: calc(var(--n) * 35ms); }
-}
+.count { user-select: none; font: .75rem var(--mono); color: var(--faint); white-space: nowrap; }
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
   overflow: hidden; clip-path: inset(50%); white-space: nowrap;
@@ -149,7 +123,7 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
   position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
   font: .62rem/1 var(--mono); color: var(--faint); white-space: nowrap;
   text-decoration: line-through; text-decoration-color: rgb(96 165 250 / .6);
-  opacity: 0; transition: opacity .3s ease; pointer-events: none;
+  opacity: 0; transition: opacity .18s ease; pointer-events: none;
 }
 .dt[data-guess].on::before { opacity: 1; }
 .dt.miss { text-decoration: underline dotted rgb(96 165 250 / .7); text-decoration-thickness: 1px; text-underline-offset: .28em; }
@@ -174,7 +148,6 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 .statusbar .tagline { margin-right: auto; color: var(--muted); }
 .replay { padding: 0; border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; }
 .replay:hover { color: var(--text); }
-.replay[hidden] { display: none; }
 .pop {
   position: absolute; z-index: 2; width: 18rem; padding: .7rem .85rem;
   background: var(--raised); border: 1px solid var(--line); border-radius: 8px;
@@ -194,14 +167,12 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 }
 
 /* "no tokens, please": plain reading, no ChatML chrome or token styling */
-html.plain .chatml, html.plain .legend, html.plain .statusbar, html.plain .tokens .count { display: none; }
+html.plain :is(.chatml, .legend, .statusbar, .hallucination, .ctxline, .tokens .count) { display: none; }
 html.plain .dt.miss { text-decoration: none; }
 html.plain .dt[data-guess]::before { display: none; }
-html.plain .chat-system .st { background: none !important; }
-html.plain .tokens > span[class^="t"], html.plain .chat .dt { background: none !important; box-shadow: none !important; }
+html.plain :is(.tokens > span[class^="t"], .chat .dt, .chat-system .st) { background: none !important; box-shadow: none !important; }
 
 /* post list */
-.list-heading { margin-top: 0; }
 .post-list { list-style: none; padding: 0; margin: 0; }
 .post-list a {
   display: flex;
@@ -324,12 +295,7 @@ main { view-transition-name: page; }
 .fig p { margin: 0; }
 .fig figcaption { margin-top: 1rem; font-size: .8rem; color: var(--faint); }
 
-/* fig: versus panels */
-.fig-versus { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-.fig-panel { border: 1px solid var(--line); border-radius: 8px; padding: .9rem 1rem; }
-.fig-panel-title { color: var(--muted); font-size: .8rem; margin-bottom: .6rem !important; }
-.fig-model { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .35rem 0; color: var(--faint); }
-.fig-model.is-winner { color: var(--text); }
+/* fig: badges */
 .fig-badge { font: .7rem var(--mono); padding: .1rem .5rem; border-radius: 99px; background: var(--t2); color: var(--text); white-space: nowrap; }
 
 /* fig: agreement bar */
@@ -368,7 +334,7 @@ main { view-transition-name: page; }
 .fig-cost-bar.is-accent { background: var(--t2); }
 
 @media (max-width: 520px) {
-  .fig-versus, .fig-branches { grid-template-columns: 1fr; }
+  .fig-branches { grid-template-columns: 1fr; }
   .fig-bar-rest { color: transparent; } /* no room for the label; scale and caption carry it */
   .fig-branches::before { display: none; }
   .post-body h2 { font-size: 1.35rem; }
@@ -418,7 +384,6 @@ main { view-transition-name: page; }
   cursor: pointer;
   transition: color .15s ease, border-color .15s ease;
 }
-.copy[hidden] { display: none; } /* display above would otherwise beat the hidden attribute */
 .copy:hover { color: var(--text); border-color: var(--hairline); }
 .copy-label { grid-area: 1 / 1; transition: opacity .15s ease; }
 .copy-label + .copy-label, .copy[data-copied] .copy-label:first-child { opacity: 0; }
@@ -451,7 +416,6 @@ main { view-transition-name: page; }
 .try h2 { margin-top: 0; }
 .try-hint { margin: 0 0 1rem; color: var(--muted); font-size: .95rem; text-wrap: pretty; }
 .try-label { display: block; margin: 1rem 0 .35rem; font: .75rem var(--mono); color: var(--faint); }
-.try-label span { color: var(--faint); }
 .try-input {
   display: block; width: 100%; padding: .65rem .8rem;
   background: var(--raised); color: var(--text);
@@ -478,7 +442,6 @@ main { view-transition-name: page; }
 }
 .try-btn:hover { background: rgb(96 165 250 / .25); }
 .try-btn:disabled { opacity: .5; cursor: progress; }
-.try-btn[hidden], .try-progress[hidden], .try-ids[hidden] { display: none; }
 .try-progress { width: 100%; height: .35rem; margin-top: .75rem; accent-color: #60a5fa; }
 .try-out { width: auto; margin: 1.5rem 0 0; white-space: pre-wrap; }
 .try-out:empty { display: none; }
@@ -541,7 +504,6 @@ main { view-transition-name: page; }
   background: var(--raised); border-top: 1px solid var(--line);
   padding: .55rem 1rem calc(.55rem + env(safe-area-inset-bottom));
 }
-.cmdline[hidden] { display: none; }
 .cmdline-inner { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .4rem; max-width: 40rem; margin: 0 auto; font: .85rem var(--mono); }
 .cmdline label { color: #60a5fa; }
 .cmdline input { flex: 1; min-width: 8rem; padding: 0; border: 0; background: none; color: var(--text); font: inherit; outline: none; }
@@ -572,7 +534,6 @@ html.still::view-transition-old(*), html.still::view-transition-new(*), html.sti
 }
 .ctx-short { display: none; }
 @media (max-width: 400px) { .ctx-long { display: none; } .ctx-short { display: inline; } }
-html.plain .ctxline { display: none; }
 html:not(.plain):has(.ctxline) { scroll-padding-bottom: 3rem; }
 
 /* fig: eval swap (CSS only). Flip the eval set and the two models trade places. */
@@ -609,7 +570,7 @@ html:not(.plain):has(.ctxline) { scroll-padding-bottom: 3rem; }
   .swap-ranks li { transition: transform .4s var(--ease-out); }
 }
 .loss-nan { margin: 1rem 0 0; font: .75rem var(--mono); color: var(--faint); overflow-wrap: anywhere; }
-.list-heading { display: flex; justify-content: space-between; align-items: baseline; }
+.list-heading { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0; }
 .list-more { font: .75rem var(--mono); letter-spacing: 0; color: var(--faint); text-decoration: none; }
 .list-more:hover { color: var(--text); }
 
@@ -617,9 +578,6 @@ html:not(.plain):has(.ctxline) { scroll-padding-bottom: 3rem; }
 @media (pointer: coarse) { .cmdline input, .grep-input { font-size: 1rem; } }
 
 /* Phase 3: idle top-5 sampler, high-temperature line, ARGMAX particles */
-.dt[data-guess]::before { transition: opacity .18s ease; }
 .dt[data-guess].resampling::before { opacity: 0; }
 .hallucination { margin: .6rem 0 0; font: .8rem var(--mono); color: #fbbf24; }
-.hallucination[hidden] { display: none; }
 .argmax-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 20; }
-html.plain .hallucination { display: none; }
