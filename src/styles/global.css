@@ -65,7 +65,7 @@ a:hover { text-decoration-color: var(--text); transition-duration: .12s; }
 .site-header nav { display: flex; gap: 1.25rem; font-size: .875rem; }
 .site-header nav a { color: var(--muted); text-decoration: none; }
 .site-header nav a:hover, .site-header nav a[aria-current] { color: var(--text); }
-@media (pointer: coarse) { .site-header nav a { padding: .75rem .3rem; margin: -.75rem -.3rem; } } /* 44px touch targets */
+@media (pointer: coarse) { .site-header nav a { padding: .75rem .6rem; margin: -.75rem -.6rem; } } /* 44px touch targets, still clear of each other */
 
 /* type */
 h1, h2 { font-family: var(--display); font-weight: 600; letter-spacing: -.025em; }
@@ -91,8 +91,9 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
   pointer-events: none;
 }
 .tokens:is(:hover, :focus, .is-lit) .count { opacity: 1; }
-/* with a mouse, the token under the pointer stands alone */
+/* with a mouse, the token under the pointer stands alone, right away (no stream delay) */
 @media (hover: hover) and (pointer: fine) {
+  .tokens:has(> span[class^="t"]:hover) > span[class^="t"] { transition-delay: 0s; }
   .tokens:has(> span[class^="t"]:hover) > span[class^="t"]:not(:hover) { background: transparent; }
 }
 /* touch screens: the line paints tinted, then the tints settle left to right */
@@ -177,6 +178,7 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 .prose p, .prose ul, .prose ol { margin: 0 0 1.25rem; }
 .prose li { margin-bottom: .35rem; }
 .prose a { text-decoration-color: var(--muted); }
+:is(.prose, .post-facts dd) a:hover { text-decoration-color: var(--text); } /* hover still wins over the muted underlines */
 .prose strong { font-weight: 500; }
 .prose img { max-width: 100%; border-radius: 8px; }
 .prose blockquote {
@@ -308,7 +310,7 @@ main { view-transition-name: page; }
     .fig-bar, .fig-cost-bar {
       animation: bar-in 1ms linear both;
       animation-timeline: view();
-      animation-range: entry 20% cover 45%;
+      animation-range: entry 20% cover 15rem; /* a fixed distance, so bars near the page end still finish on tall screens */
     }
     .fig-cost-bar { animation-name: bar-in-pill; }
   }
@@ -329,10 +331,9 @@ main { view-transition-name: page; }
   font-size: .9rem;
 }
 .post-nav a { display: grid; gap: .2rem; align-content: start; text-decoration: none; color: var(--text); }
+.post-nav .dim { font: .75rem var(--mono); color: var(--faint); transition: color .3s ease; }
 .post-nav a:hover .dim { color: var(--muted); }
-.post-nav .dim { transition: color .3s ease; }
 .post-nav .right { margin-left: auto; text-align: right; }
-.post-nav .dim { font: .75rem var(--mono); color: var(--faint); }
 
 /* copy-email button: both labels share one grid cell, so swapping them never shifts layout */
 .email { display: inline-flex; align-items: baseline; gap: .5rem; }
@@ -347,6 +348,7 @@ main { view-transition-name: page; }
   cursor: pointer;
   transition: color .15s ease, border-color .15s ease;
 }
+.copy[hidden] { display: none; } /* display above would otherwise beat the hidden attribute */
 .copy:hover { color: var(--text); border-color: var(--hairline); }
 .copy-label { grid-area: 1 / 1; transition: opacity .15s ease; }
 .copy-label + .copy-label, .copy[data-copied] .copy-label:first-child { opacity: 0; }

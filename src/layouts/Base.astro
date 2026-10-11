@@ -31,6 +31,7 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
     <meta property="og:image" content={new URL('/og.png', Astro.site)} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Deepak Nelapatla: “I build models that read clinical notes.” shown as 8 tinted tokens" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href="/rss.xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -57,7 +58,7 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
       <span>Deepak Nelapatla</span>
       <span class="email">
         <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
-        <button type="button" class="copy" data-copy={EMAIL} hidden>
+        <button type="button" class="copy" data-copy={EMAIL} aria-label="copy email" hidden>
           <span class="copy-label">copy</span>
           <span class="copy-label" aria-hidden="true">copied</span>
         </button>
