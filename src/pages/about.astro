@@ -1,5 +1,16 @@
 ---
 import Base from '../layouts/Base.astro';
+import { Tiktoken } from 'js-tiktoken/lite';
+import gpt2 from 'js-tiktoken/ranks/gpt2';
+import cl100k from 'js-tiktoken/ranks/cl100k_base';
+import o200k from 'js-tiktoken/ranks/o200k_base';
+
+// My name through three generations of OpenAI tokenizers, counted at build time.
+const encoders = [new Tiktoken(gpt2), new Tiktoken(cl100k), new Tiktoken(o200k)];
+const counts = (s: string) => encoders.map((e) => e.encode(s).length);
+const english = counts('Deepak Nelapatla');
+const telugu = counts('దీపక్ నేలపాటి');
+const cheaper = Math.floor(telugu[0] / telugu[2]);
 ---
 <Base title="about">
   <article class="prose">
@@ -7,11 +18,17 @@ import Base from '../layouts/Base.astro';
     <p>I’m Deepak Nelapatla, a machine learning engineer on the ML4H team at the Broad Institute of MIT and Harvard.</p>
     <p>Most of my work is with longitudinal EHR notes: years of clinical text written about a patient over time. Right now I’m building models that use those notes to predict disease, focusing on late-life depression and stroke.</p>
 
-    <h2>Background</h2>
-    <ul>
-      <li>M.S. in Computer Science, concentration in AI/ML, University of Texas at Arlington</li>
-      <li>B.Tech in Electronics and Communication Engineering, JNTU Hyderabad</li>
-    </ul>
+    <h2 id="model-card">Model card</h2>
+    <dl class="post-facts model-card">
+      <div><dt>Model</dt><dd>deepak-24</dd></div>
+      <div><dt>Pretraining</dt><dd>B.Tech, Electronics and Communication Engineering · JNTU Hyderabad</dd></div>
+      <div><dt>Fine-tuning</dt><dd>M.S., Computer Science (AI/ML) · UT Arlington</dd></div>
+      <div><dt>Deployed</dt><dd>ML4H · Broad Institute of MIT and Harvard</dd></div>
+      <div><dt>Eval</dt><dd><a href="/posts/benchmarks-picked-the-wrong-winner">the leaderboard picked the wrong winner</a></dd></div>
+      <div><dt>Intended use</dt><dd>reading clinical notes; writing these ones</dd></div>
+      <div><dt>Known issues</dt><dd>always up for a game</dd></div>
+    </dl>
+    <p class="name-tokens">My name, tokenized by GPT-2 → GPT-4 → GPT-4o: <span lang="en">Deepak Nelapatla</span> is {english.join(' → ')} tokens. In Telugu, <span lang="te">దీపక్ నేలపాటి</span> is {telugu.join(' → ')}. It got {cheaper}× cheaper to say my name.</p>
 
     <h2>Why “tokenizer”</h2>
     <p>Before a language model can read anything, a tokenizer breaks the text into small pieces. That’s what this site is for me: breaking work, life and play into pieces small enough to think about. On the homepage, a small model reads my system prompt and tries to predict what I’ll say, one token at a time. Where it guesses wrong, that’s me.</p>

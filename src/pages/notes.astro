@@ -1,0 +1,161 @@
+---
+import Base from '../layouts/Base.astro';
+import { getPosts, tokensIn } from '../lib';
+
+const CONTEXT = 128_000; // GPT-4o's context window, in tokens
+const posts = await getPosts();
+let position = 0;
+const rows = posts.map((p) => {
+  const tokens = tokensIn(p.body);
+  const row = { id: p.id, title: p.data.title, stage: p.data.stage, start: position, tokens };
+  position += tokens;
+  return row;
+});
+const used = position;
+const fmt = (n: number) => n.toLocaleString('en-US');
+---
+<Base title="notes" description="Every note, packed into one context window, with a regex search that only reads the part of each note that matters.">
+  <section class="hero">
+    <h1 class="notes-title">Notes</h1>
+    <p class="intro">Every note, packed into one context window like a training sequence. Search it the way I search clinical notes: a regex finds the matches, and only a small window around each one gets read.</p>
+  </section>
+
+  <section class="grep" data-grep>
+    <label class="try-label" for="grep-input">grep <span>(a regex, case-insensitive)</span></label>
+    <input id="grep-input" class="try-input grep-input" type="search" spellcheck="false" autocomplete="off" placeholder="smok|tobacco" />
+    <label class="try-label grep-window" for="grep-window">window <span>± <output data-window-out>20</output> tokens around each match</span></label>
+    <input id="grep-window" type="range" min="5" max="150" step="5" value="20" class="grep-range" />
+    <p class="grep-summary" data-summary aria-live="polite"></p>
+    <div class="grep-results" data-results></div>
+  </section>
+
+  <ol class="context" aria-label="Notes in reading order">
+    {rows.map((r) => (
+      <li style={`--share: ${(r.tokens / Math.max(...rows.map((x) => x.tokens))).toFixed(3)}`}>
+        <span class="ctx-pos" aria-hidden="true">{fmt(r.start)}</span>
+        <a href={`/posts/${r.id}`}>
+          <span class="post-title">{r.title}</span>
+          <span class="post-meta"><span>{r.stage}</span><span>{r.tokens}&nbsp;tok</span></span>
+        </a>
+        <span class="ctx-eot" aria-hidden="true">&lt;|endoftext|&gt;</span>
+      </li>
+    ))}
+    <li class="ctx-free" aria-hidden="true">
+      <span class="ctx-pos">{fmt(used)}</span>
+      <span>{fmt(CONTEXT - used)} tokens free · all {rows.length} notes fit {Math.floor(CONTEXT / Math.max(used, 1))}× over</span>
+    </li>
+  </ol>
+  <p class="sr-only">{rows.length} notes, {fmt(used)} tokens in total.</p>
+
+  <script>
+    type Note = { id: string; title: string; pieces: string[] };
+
+    const box = document.querySelector<HTMLElement>('[data-grep]')!;
+    const input = box.querySelector<HTMLInputElement>('#grep-input')!;
+    const range = box.querySelector<HTMLInputElement>('#grep-window')!;
+    const windowOut = box.querySelector<HTMLOutputElement>('[data-window-out]')!;
+    const summary = box.querySelector<HTMLElement>('[data-summary]')!;
+    const results = box.querySelector<HTMLElement>('[data-results]')!;
+    let notes: Note[] | undefined;
+    let loading: Promise<Note[]> | undefined;
+
+    const load = () => (loading ??= fetch('/notes.json').then((r) => r.json()).then((n) => (notes = n)));
+    input.addEventListener('focus', load, { once: true });
+
+    // Text fragment for a deep link that scrolls to and highlights the match.
+    const fragment = (text: string) =>
+      `#:~:text=${encodeURIComponent(text.trim()).replace(/-/g, '%2D').replace(/,/g, '%2C').replace(/&/g, '%26')}`;
+
+    function search() {
+      const W = Number(range.value);
+      windowOut.textContent = String(W);
+      const query = input.value.trim();
+      results.replaceChildren();
+      if (!query) { summary.textContent = ''; return; }
+      if (!notes) { summary.textContent = 'loading notes…'; load().then(search); return; }
+      let re: RegExp;
+      try {
+        re = new RegExp(query, 'gi');
+      } catch (err) {
+        summary.textContent = `re.error: ${(err as Error).message.replace(/^Invalid regular expression: \/.*\/[a-z]*: /, '').toLowerCase()}`;
+        return;
+      }
+
+      let hits = 0, sent = 0, total = 0, matched = 0;
+      for (const note of notes) {
+        const text = note.pieces.join('');
+        total += note.pieces.length;
+        // Character offset where each token starts, to map a match back to tokens.
+        const starts: number[] = [];
+        let at = 0;
+        for (const p of note.pieces) { starts.push(at); at += p.length; }
+        const tokenAt = (char: number) => {
+          let lo = 0, hi = starts.length - 1;
+          while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (starts[mid] <= char) lo = mid; else hi = mid - 1; }
+          return lo;
+        };
+        // Merge overlapping ±W windows around every match.
+        const windows: { from: number; to: number; marks: [number, number][] }[] = [];
+        for (const m of text.matchAll(re)) {
+          if (!m[0]) continue;
+          hits++;
+          const first = tokenAt(m.index!), last = tokenAt(m.index! + m[0].length - 1);
+          const from = Math.max(0, first - W), to = Math.min(note.pieces.length - 1, last + W);
+          const prev = windows[windows.length - 1];
+          if (prev && from <= prev.to + 1) { prev.to = Math.max(prev.to, to); prev.marks.push([m.index!, m.index! + m[0].length]); }
+          else windows.push({ from, to, marks: [[m.index!, m.index! + m[0].length]] });
+        }
+        if (!windows.length) continue;
+        matched++;
+        const article = document.createElement('article');
+        article.className = 'grep-hit';
+        const head = document.createElement('a');
+        head.className = 'grep-title';
+        head.textContent = note.title;
+        const firstMark = windows[0].marks[0];
+        head.href = `/posts/${note.id}${fragment(text.slice(firstMark[0], firstMark[1]))}`;
+        article.append(head);
+        for (const w of windows) {
+          sent += w.to - w.from + 1;
+          const snippet = document.createElement('p');
+          snippet.className = 'fig-note-text grep-snippet';
+          const begin = starts[w.from], end = w.to + 1 < starts.length ? starts[w.to + 1] : text.length;
+          let cursor = begin;
+          const span = document.createElement('span');
+          span.className = 'in';
+          for (const [a, b] of w.marks) {
+            span.append(text.slice(cursor, a));
+            const mark = document.createElement('mark');
+            mark.textContent = text.slice(a, b);
+            span.append(mark);
+            cursor = b;
+          }
+          span.append(text.slice(cursor, end));
+          if (w.from > 0) snippet.append('… ');
+          snippet.append(span);
+          if (end < text.length) snippet.append(' …');
+          article.append(snippet);
+        }
+        results.append(article);
+      }
+      if (!hits) { summary.textContent = `0 hits · nothing sent · 0 / ${total} tok`; return; }
+      const saved = 100 * (1 - sent / total);
+      summary.textContent = `${hits} hit${hits === 1 ? '' : 's'} in ${matched} note${matched === 1 ? '' : 's'} · sent ${sent} / ${total} tok · saved ${saved.toFixed(1)}%`;
+      summary.style.setProperty('--saved', `${saved}%`);
+      if (W >= 150 && saved < 30) {
+        const note = document.createElement('p');
+        note.className = 'grep-aside';
+        note.textContent = 'My notes are short, so a ±150 window reads most of them. On a 3,000-token clinical note the same window saves far more.';
+        results.append(note);
+      }
+    }
+
+    let frame = 0;
+    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(search); };
+    input.addEventListener('input', schedule);
+    range.addEventListener('input', schedule);
+    // Arriving with ?q= (e.g. from the : command line) runs the search straight away.
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) { input.value = q; load().then(search); }
+  </script>
+</Base>

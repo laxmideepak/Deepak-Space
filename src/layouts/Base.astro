@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { TAGS } from '../lib';
+import { TAGS, getPosts } from '../lib';
 
 const SITE_NAME = 'Deepak’s Tokenizer';
 const EMAIL = 'nelapatladeepak@gmail.com';
@@ -10,6 +10,8 @@ const { title, description = 'Deepak Nelapatla, ML engineer. Notes on what I lea
 const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
 const path = Astro.url.pathname;
 const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
+// For the : command line's `open` command.
+const notes = (await getPosts()).map((p) => ({ id: p.id, title: p.data.title }));
 ---
 <!doctype html>
 <html lang="en">
@@ -22,6 +24,7 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
       // Before first paint: plain reading mode, and whether this session already watched the decode ("KV hit").
       try { if (localStorage.getItem('plain')) document.documentElement.classList.add('plain'); } catch {}
       try { document.documentElement.dataset.kv = sessionStorage.getItem('kv') === '1' ? 'hit' : 'cold'; } catch {}
+      try { if (localStorage.getItem('still')) document.documentElement.classList.add('still'); } catch {} // :temperature 0
     </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -52,6 +55,7 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
     <header class="site-header">
       <a href="/" class="site-name">{SITE_NAME}</a>
       <nav>
+        <a href="/notes" aria-current={path.startsWith('/notes') ? 'page' : undefined}>notes</a>
         {TAGS.map((t) => <a href={`/tags/${t}`} aria-current={path.startsWith(`/tags/${t}`) ? 'page' : undefined}>{t}</a>)}
         <a href="/try" aria-current={path.startsWith('/try') ? 'page' : undefined}>try</a>
         <a href="/about" aria-current={path.startsWith('/about') ? 'page' : undefined}>about</a>
@@ -71,8 +75,19 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
         <span class="sr-only" role="status" aria-live="polite"></span>
       </span>
       <a href="/rss.xml">rss</a>
-      <button type="button" class="plain-toggle" data-plain aria-pressed="false" hidden>no tokens, please</button>
+      <span class="footer-tools">
+        <button type="button" class="plain-toggle" data-cmd-open hidden>: cmd</button>
+        <button type="button" class="plain-toggle" data-plain aria-pressed="false" hidden>no tokens, please</button>
+      </span>
     </footer>
+    <form class="cmdline" data-cmdline hidden>
+      <div class="cmdline-inner">
+        <label for="cmd-input" aria-hidden="true">:</label>
+        <input id="cmd-input" aria-label="command (type help)" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" />
+        <output class="cmdline-out" role="status" aria-live="polite" data-cmd-out></output>
+      </div>
+    </form>
+    <script is:inline type="application/json" id="cmd-notes" set:html={JSON.stringify(notes).replace(/</g, '\\u003c')} />
     <script>
       // "No tokens, please": plain reading mode, remembered per browser. Hidden without JS.
       const plain = document.querySelector<HTMLButtonElement>('[data-plain]');
@@ -90,6 +105,79 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
           sync();
         });
       }
+
+      // The : command line. Press ":" (or the footer button); errors come back as Python exceptions.
+      const html = document.documentElement;
+      const cmd = document.querySelector<HTMLFormElement>('[data-cmdline]')!;
+      const cmdInput = cmd.querySelector<HTMLInputElement>('input')!;
+      const cmdOut = cmd.querySelector<HTMLOutputElement>('[data-cmd-out]')!;
+      const cmdButton = document.querySelector<HTMLButtonElement>('[data-cmd-open]')!;
+      const cmdNotes: { id: string; title: string }[] = JSON.parse(document.getElementById('cmd-notes')!.textContent!);
+      let returnFocus: HTMLElement | null = null;
+      const openCmd = () => {
+        returnFocus = document.activeElement as HTMLElement | null;
+        cmd.hidden = false;
+        cmdOut.textContent = '';
+        cmdInput.value = '';
+        cmdInput.focus();
+      };
+      const closeCmd = () => {
+        cmd.hidden = true;
+        returnFocus?.focus?.();
+      };
+      const say = (text: string) => { cmdOut.textContent = text; };
+      const go = (href: string) => { closeCmd(); location.href = href; };
+      const setStill = (on: boolean) => {
+        html.classList.toggle('still', on);
+        try { on ? localStorage.setItem('still', '1') : localStorage.removeItem('still'); } catch {}
+      };
+      const run = (raw: string) => {
+        const [name = '', ...rest] = raw.trim().replace(/^:/, '').split(/\s+/);
+        const arg = rest.join(' ');
+        switch (name) {
+          case '': return closeCmd();
+          case 'help': case 'h':
+            return say('open <words> · notes · grep <regex> · try · about · card · home · temperature <t> · plain · q');
+          case 'open': case 'o': {
+            if (!arg) return say("TypeError: open() missing 1 required positional argument: 'file'");
+            const q = arg.toLowerCase();
+            const hit = cmdNotes.find((n) => n.title.toLowerCase().includes(q) || n.id.includes(q));
+            return hit ? go(`/posts/${hit.id}`) : say(`FileNotFoundError: [Errno 2] No such note: '${arg}'`);
+          }
+          case 'notes': case 'n': return go('/notes');
+          case 'grep': case 'g': return go(`/notes${arg ? `?q=${encodeURIComponent(arg)}` : ''}`);
+          case 'try': return go('/try');
+          case 'about': return go('/about');
+          case 'card': return go('/about#model-card');
+          case 'home': return go('/');
+          case 'temperature': case 't': {
+            const t = Number(arg);
+            if (!arg || Number.isNaN(t)) return say(`ValueError: could not convert string to float: '${arg}'`);
+            if (t <= 0) {
+              setStill(true);
+              return say(`UserWarning: \`temperature\` (=${t}) has to be a strictly positive float, otherwise your next token scores will be invalid. Motion off.`);
+            }
+            setStill(false);
+            return say(`temperature=${t} · motion on`);
+          }
+          case 'plain': plain?.click(); return say(html.classList.contains('plain') ? 'plain reading on' : 'plain reading off');
+          case 'q': case 'quit': case 'exit': say('<|endoftext|>'); setTimeout(closeCmd, 700); return;
+          default: return say(`NameError: name '${name}' is not defined`);
+        }
+      };
+      cmd.addEventListener('submit', (e) => { e.preventDefault(); run(cmdInput.value); cmdInput.select(); });
+      cmd.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); closeCmd(); } });
+      cmdButton.hidden = false;
+      cmdButton.addEventListener('click', openCmd);
+      addEventListener('keydown', (e) => {
+        const t = e.target as HTMLElement;
+        const typing = t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+        // Single-key shortcut: off in plain mode (WCAG 2.1.4); the footer button always works.
+        if (e.key === ':' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey && !html.classList.contains('plain')) {
+          e.preventDefault();
+          openCmd();
+        }
+      });
 
       // Copy the email address. The button stays hidden without JS.
       for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {

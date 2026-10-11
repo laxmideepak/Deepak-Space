@@ -64,7 +64,7 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
       return <span class:list={['dt', `t${i % 4}`, { miss: !t.hit }]} data-i={i} data-guess={t.hit ? undefined : guessLabel(t.guess)} aria-hidden="true">{parts.map((part, j) => <>{j > 0 && <br />}{part}</>)}</span>;
     })}
   </p>
-  <p class="chatml" aria-hidden="true">&lt;|im_end|&gt;</p>
+  <p class="chatml chat-end"><span aria-hidden="true">&lt;|im_end|&gt;</span><a class="chip argmax" href="/notes" data-argmax>notes ↩</a></p>
   <p class="legend" id="chat-legend">struck through = what a small model guessed I’d say · where it’s wrong, that’s me · hover any word for its odds · <a href="/try">try it on your own words</a></p>
   <p class="statusbar">
     <span class="sr-only">A {modelName} model, reading my system prompt, predicted {hits} of these {tokens.length} tokens.</span>
@@ -88,7 +88,7 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
       const pop = root.querySelector('.pop');
       const total = toks.length;
       const kv = html.dataset.kv === 'hit'; // set in <head> before the prompt paints
-      const still = () => html.classList.contains('plain') || new URLSearchParams(location.search).has('still')
+      const still = () => html.classList.contains('plain') || html.classList.contains('still') || new URLSearchParams(location.search).has('still')
         || matchMedia('(prefers-reduced-motion: reduce)').matches;
       let timer, i = 0;
       root.querySelector('[data-kv-cell]').textContent = kv ? 'hit · prefill skipped' : 'cold';
@@ -205,6 +205,47 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         html.dataset.kv = 'cold';
         root.querySelector('[data-kv-cell]').textContent = 'cold';
         start();
+      });
+
+      // ARGMAX: Enter (or the notes chip) anneals the temperature. Each token's opacity is
+      // exp((log p - max) / T): as T falls, only the tokens the model was surest of survive,
+      // then the chip morphs into the /notes heading (cross-document view transition).
+      const chip = root.querySelector('[data-argmax]');
+      let annealing = false;
+      const argmax = (e) => {
+        if (annealing || still() || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button > 0) return;
+        e.preventDefault();
+        annealing = true;
+        finish();
+        root.classList.add('annealing');
+        hide();
+        const spans = [...root.querySelectorAll('.scored [data-i]')];
+        const scores = spans.map((el) => Math.log(Math.max(data[el.closest('.scored').dataset.set][+el.dataset.i].p, 1e-9)));
+        const max = Math.max(...scores), t0 = performance.now(), D = 650;
+        let gone = false;
+        const go = () => { if (!gone) { gone = true; location.href = chip.href; } };
+        setTimeout(go, D + 250); // hidden tabs pause animation frames; still navigate
+        const frame = (now) => {
+          const k = Math.min((now - t0) / D, 1);
+          const T = 8 * (1 - k) ** 2 + 0.01;
+          spans.forEach((el, j) => { el.style.opacity = Math.exp((scores[j] - max) / T).toFixed(3); });
+          state.textContent = `ARGMAX · T ${T.toFixed(2)}`;
+          if (k < 1) requestAnimationFrame(frame);
+          else go();
+        };
+        requestAnimationFrame(frame);
+      };
+      chip.addEventListener('click', argmax);
+      addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && document.activeElement === document.body) argmax(e);
+      });
+      // Coming back via the back button restores the page as it was.
+      addEventListener('pageshow', (e) => {
+        if (!e.persisted) return;
+        annealing = false;
+        root.classList.remove('annealing');
+        root.querySelectorAll('.scored [data-i]').forEach((el) => { el.style.opacity = ''; });
+        state.textContent = `DONE ${total} tok`;
       });
 
       if (still() || kv) finish();

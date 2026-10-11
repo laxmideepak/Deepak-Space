@@ -8,6 +8,8 @@ import { TAGS } from '../lib';
     <h1>404</h1>
     <Tokens text="This page isn’t in my vocabulary." lit />
     <p class="intro">Byte-level BPE never hits an unknown token. This URL did.</p>
+    <p class="loss-nan" aria-hidden="true">loss: nan · KeyError: <span data-path>'?'</span></p>
+    <script is:inline>document.querySelector('[data-path]').textContent = `'${location.pathname}'`;</script>
   </section>
   <p class="pills">
     {TAGS.map((t) => <a href={`/tags/${t}`}>{t}</a>)}

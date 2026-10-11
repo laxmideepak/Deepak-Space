@@ -23,10 +23,23 @@ const enc = new Tiktoken(o200k_base);
 
 export const tokenize = (text: string) => enc.encode(text).map((t) => enc.decode([t]));
 
+// The words people read: no figures, HTML or Markdown syntax.
+export function plainText(markdown = '') {
+  return markdown
+    .replace(/<figure[\s\S]*?<\/figure>/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // links and images keep their text
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*(?:[-*+]|\d+\.)\s+/gm, '')
+    .replace(/[*_`]/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+export const tokensIn = (markdown = '') => enc.encode(plainText(markdown)).length;
+
 export function tokenCount(text = '') {
-  // Count the words people read, not the markup inside figures.
-  const prose = text.replace(/<figure[\s\S]*?<\/figure>/g, '');
-  const n = enc.encode(prose).length;
+  const n = tokensIn(text);
   // Non-breaking space so "1.2k tokens" never splits across lines.
   return n < 1000 ? `${n}\u00a0tokens` : `${(n / 1000).toFixed(1)}k\u00a0tokens`;
 }

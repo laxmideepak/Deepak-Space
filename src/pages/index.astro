@@ -30,6 +30,6 @@ const posts = await getPosts();
     <ChatTurn system={SYSTEM} lines={REPLY} />
   </section>
 
-  <h2 class="list-heading" id="notes">Notes</h2>
+  <h2 class="list-heading" id="notes"><span>Notes</span><a href="/notes" class="list-more">search all ↗</a></h2>
   <PostList posts={posts} />
 </Base>

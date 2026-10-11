@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getPosts, fmt, isoDate, tokenCount } from '../../lib';
+import { getPosts, fmt, isoDate, tokenCount, tokensIn } from '../../lib';
 import { render } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -15,6 +15,7 @@ export async function getStaticPaths() {
 const { post, prev, next } = Astro.props;
 const { Content } = await render(post);
 const { title, description, planted, tended, stage, tags } = post.data;
+const total = tokensIn(post.body);
 ---
 <Base title={title} description={description} type="article">
   <article>
@@ -30,6 +31,10 @@ const { title, description, planted, tended, stage, tags } = post.data;
     </header>
     <div class="prose post-body"><Content /></div>
     <p class="eot" aria-hidden="true">&lt;|endoftext|&gt;</p>
+    <p class="ctxline" aria-hidden="true" data-ctx data-total={total}>
+      <span class="ctx-long">ctx <b data-ctx-n>{total}</b> / {total} tok · {stage} · &lt;|endoftext|&gt; in <b data-ctx-left>0</b></span>
+      <span class="ctx-short">ctx <b data-ctx-pct>100</b>%</span>
+    </p>
   </article>
   {(prev || next) && (
     <nav class="post-nav" aria-label="More notes">
@@ -47,4 +52,27 @@ const { title, description, planted, tended, stage, tags } = post.data;
       )}
     </nav>
   )}
+  <script>
+    // How far into the post you are, in tokens: scroll progress through the article × its length.
+    const line = document.querySelector<HTMLElement>('[data-ctx]');
+    const article = line?.closest('article');
+    if (line && article) {
+      const total = Number(line.dataset.total);
+      const n = line.querySelector('[data-ctx-n]')!, left = line.querySelector('[data-ctx-left]')!, pct = line.querySelector('[data-ctx-pct]')!;
+      let frame = 0;
+      const update = () => {
+        const r = article.getBoundingClientRect();
+        const p = Math.min(1, Math.max(0, (innerHeight - r.top) / r.height));
+        const at = Math.round(p * total);
+        n.textContent = String(at);
+        left.textContent = String(total - at);
+        pct.textContent = String(Math.round(p * 100));
+        line.style.setProperty('--p', p.toFixed(3));
+      };
+      const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
+      addEventListener('scroll', schedule, { passive: true });
+      addEventListener('resize', schedule, { passive: true });
+      update();
+    }
+  </script>
 </Base>
