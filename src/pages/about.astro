@@ -4,8 +4,8 @@ import Base from '../layouts/Base.astro';
 <Base title="about">
   <article class="prose">
     <h1>About</h1>
-    <p>I'm Deepak Nelapatla, a machine learning engineer on the ML4H team at the Broad Institute of MIT and Harvard.</p>
-    <p>Most of my work is with longitudinal EHR notes: years of clinical text written about a patient over time. Right now I'm building models that use those notes to predict disease, focusing on late-life depression and stroke.</p>
+    <p>I’m Deepak Nelapatla, a machine learning engineer on the ML4H team at the Broad Institute of MIT and Harvard.</p>
+    <p>Most of my work is with longitudinal EHR notes: years of clinical text written about a patient over time. Right now I’m building models that use those notes to predict disease, focusing on late-life depression and stroke.</p>
 
     <h2>Background</h2>
     <ul>
@@ -13,8 +13,8 @@ import Base from '../layouts/Base.astro';
       <li>B.Tech in Electronics and Communication Engineering, JNTU Hyderabad</li>
     </ul>
 
-    <h2>Why "tokenizer"</h2>
-    <p>Before a language model can read anything, a tokenizer breaks the text into small pieces. That's what this site is for me: breaking work, life and play into pieces small enough to think about. Hover the line on the homepage to see it tokenized for real.</p>
+    <h2>Why “tokenizer”</h2>
+    <p>Before a language model can read anything, a tokenizer breaks the text into small pieces. That’s what this site is for me: breaking work, life and play into pieces small enough to think about. Hover the line on the homepage to see it tokenized for real.</p>
 
     <h2>How notes grow</h2>
     <p>Most of these notes start with a pen in a paper notebook. Each one is marked with a stage:</p>
@@ -23,7 +23,14 @@ import Base from '../layouts/Base.astro';
       <li><strong>Budding</strong>: taking shape, still being revised.</li>
       <li><strong>Evergreen</strong>: finished enough to stand on its own.</li>
     </ul>
-    <p>Lengths are counted in tokens, using the same tokenizer as GPT-4o.</p>
+
+    <h2>Colophon</h2>
+    <dl class="post-facts">
+      <div><dt>Tokenizer</dt><dd>o200k_base (GPT-4o) via js-tiktoken, counted at build</dd></div>
+      <div><dt>Type</dt><dd>Funnel Display, Geist, Geist Mono</dd></div>
+      <div><dt>Built with</dt><dd>Astro; the only client JS copies my email</dd></div>
+      <div><dt>Hosted on</dt><dd>Vercel</dd></div>
+    </dl>
 
     <h2>Say hi</h2>
     <p><a href="mailto:nelapatladeepak@gmail.com">nelapatladeepak@gmail.com</a></p>

@@ -15,6 +15,9 @@ export async function getPosts() {
 export const fmt = (d: Date) =>
   d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
+// Machine-readable date for <time datetime>, in UTC to match fmt.
+export const isoDate = (d: Date) => d.toISOString().slice(0, 10);
+
 // Same tokenizer as GPT-4o. Runs at build time only, nothing ships to the browser.
 const enc = new Tiktoken(o200k_base);
 
@@ -24,5 +27,6 @@ export function tokenCount(text = '') {
   // Count the words people read, not the markup inside figures.
   const prose = text.replace(/<figure[\s\S]*?<\/figure>/g, '');
   const n = enc.encode(prose).length;
-  return n < 1000 ? `${n} tokens` : `${(n / 1000).toFixed(1)}k tokens`;
+  // Non-breaking space so "1.2k tokens" never splits across lines.
+  return n < 1000 ? `${n}\u00a0tokens` : `${(n / 1000).toFixed(1)}k\u00a0tokens`;
 }

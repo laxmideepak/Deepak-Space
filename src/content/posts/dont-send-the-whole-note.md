@@ -1,5 +1,5 @@
 ---
-title: "Don't send the whole note"
+title: "Don’t send the whole note"
 description: "Extracting one fact from EHR notes? Send only the part that mentions it. A regex window can cut LLM costs by about 70–80%."
 planted: 2026-10-10T09:00
 stage: budding
@@ -24,9 +24,9 @@ For smoking, the pipeline looks like this:
     <span class="out">Plan: continue current meds, recheck labs in 3 months, return sooner if symptoms change.</span>
   </p>
   <div class="fig-legend"><span class="key-in">sent to the LLM</span><span class="key-out">never sent</span></div>
-  <div class="fig-cost">
-    <div class="fig-cost-row"><span>Whole note</span><div class="fig-cost-bar" style="--w: 100%"></div></div>
-    <div class="fig-cost-row"><span>Window only</span><div class="fig-cost-bar is-accent" style="--w: 25%"></div></div>
+  <div class="fig-cost" role="img" aria-label="Tokens sent: whole note 100%, window only about 25%">
+    <div class="fig-cost-row"><span>Whole note</span><div class="fig-cost-bar" style="--w: 100%"></div><span class="fig-cost-val">100%</span></div>
+    <div class="fig-cost-row"><span>Window only</span><div class="fig-cost-bar is-accent" style="--w: 25%"></div><span class="fig-cost-val">~25%</span></div>
   </div>
   <figcaption>A made-up example note. Only the window around the matched word goes to the model, which can cut costs by about 70–80%.</figcaption>
 </figure>

@@ -3,8 +3,9 @@
   --raised: #1c1c1c;
   --line: #2a2a2a;
   --text: #ededed;
-  --muted: #8f8f8f;
-  --faint: #5f5f5f;
+  --muted: #a3a3a3;   /* 7.2:1 on bg */
+  --faint: #868686;   /* 5.0:1 on bg, 4.7:1 on raised: smallest gray still readable */
+  --hairline: #5f5f5f; /* decorative lines only, never text */
   --t0: rgba(96, 165, 250, 0.2);
   --t1: rgba(251, 191, 36, 0.18);
   --t2: rgba(74, 222, 128, 0.16);
@@ -12,20 +13,37 @@
   --display: 'Funnel Display', 'Geist', system-ui, sans-serif;
   --sans: 'Geist', system-ui, sans-serif;
   --mono: 'Geist Mono', ui-monospace, monospace;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
 }
 
 * { box-sizing: border-box; }
-html { -webkit-font-smoothing: antialiased; }
+html { -webkit-font-smoothing: antialiased; scrollbar-gutter: stable; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font: 400 1rem/1.65 var(--sans);
+  font-synthesis-weight: none; /* only Geist 400/500 are loaded */
 }
 ::selection { background-color: rgb(96 165 250 / .32); color: var(--text); }
-a { color: inherit; text-decoration-color: var(--faint); text-underline-offset: 3px; }
-a:hover { text-decoration-color: var(--text); }
-:focus-visible { outline: 1px solid var(--muted); outline-offset: 3px; border-radius: 2px; }
+a {
+  color: inherit;
+  text-decoration-color: var(--hairline);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .22em;
+  transition: text-decoration-color .3s ease, color .3s ease;
+}
+a:hover { text-decoration-color: var(--text); transition-duration: .12s; }
+:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; border-radius: 2px; } /* --t0 at full strength */
+
+/* skip link, styled as a token chip; appears on keyboard focus */
+.skip {
+  position: absolute; left: 1rem; top: -3rem; z-index: 1;
+  background: rgb(96 165 250 / .32); color: var(--text);
+  padding: .25rem .5rem; border-radius: 3px;
+  font: .75rem var(--mono); text-decoration: none;
+}
+.skip:focus { top: 1rem; }
 
 .site-header, main, footer {
   max-width: 40rem;
@@ -44,14 +62,17 @@ a:hover { text-decoration-color: var(--text); }
   padding-bottom: 4.5rem;
 }
 .site-name { font: 600 1.1rem/1 var(--display); letter-spacing: -.01em; text-decoration: none; }
-nav { display: flex; gap: 1.25rem; font-size: .875rem; }
-nav a { color: var(--muted); text-decoration: none; }
-nav a:hover, nav a[aria-current] { color: var(--text); }
+.site-header nav { display: flex; gap: 1.25rem; font-size: .875rem; }
+.site-header nav a { color: var(--muted); text-decoration: none; }
+.site-header nav a:hover, .site-header nav a[aria-current] { color: var(--text); }
+@media (pointer: coarse) { .site-header nav a { padding: .75rem .3rem; margin: -.75rem -.3rem; } } /* 44px touch targets */
 
 /* type */
 h1, h2 { font-family: var(--display); font-weight: 600; letter-spacing: -.025em; }
 h1 { font-size: clamp(2.25rem, 6.5vw, 3rem); line-height: 1.05; margin: 0 0 1rem; }
 h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
+h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
+.prose p, .prose li, .intro, .system-prompt p { text-wrap: pretty; }
 
 /* hero + tokenized intro */
 .hero { margin-bottom: 3rem; }
@@ -70,6 +91,15 @@ h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
   pointer-events: none;
 }
 .tokens:is(:hover, :focus, .is-lit) .count { opacity: 1; }
+/* with a mouse, the token under the pointer stands alone */
+@media (hover: hover) and (pointer: fine) {
+  .tokens:has(> span[class^="t"]:hover) > span[class^="t"]:not(:hover) { background: transparent; }
+}
+/* touch screens: the line paints tinted, then the tints settle left to right */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .tokens:not(.is-lit) > span[class^="t"] { animation: settle .8s ease-out calc(.35s + var(--i) * 45ms) backwards; }
+}
+@keyframes settle { from { background-color: var(--tint); } }
 /* touch screens (incl. touch laptops) can't rely on hover, so show the count there */
 @media (hover: none), (any-pointer: coarse) { .tokens .count { opacity: 1; } }
 /* tints arrive one after another, like a tokenizer emitting output; leaving clears at once */
@@ -115,8 +145,14 @@ h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
   text-decoration: none;
 }
 .post-list li:last-child a { border-bottom: 1px solid var(--line); }
-.post-title { transition: color .15s ease; }
-@media (hover: hover) { .post-list a:hover .post-title { color: var(--muted); } }
+.post-title, .post-meta { transition: color .3s ease; }
+.post-list a:focus-visible .post-meta { color: var(--muted); }
+/* hover raises contrast: the row brightens, the others step back (fast in, slow out) */
+@media (hover: hover) and (pointer: fine) {
+  .post-list a:hover .post-meta { color: var(--muted); }
+  .post-list a:hover :is(.post-title, .post-meta) { transition-duration: .12s; }
+  .post-list:has(a:hover) a:not(:hover) .post-title { color: var(--muted); }
+}
 .post-meta { display: flex; gap: 1rem; flex-shrink: 0; font: .75rem var(--mono); color: var(--faint); }
 .post-meta span:last-child { min-width: 5.5rem; text-align: right; }
 .empty { color: var(--muted); }
@@ -135,6 +171,7 @@ h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
 }
 .post-facts dt { color: var(--faint); font-size: .75rem; }
 .post-facts dd { margin: 0; display: flex; gap: .6rem; }
+.post-facts dd a { text-decoration-color: var(--muted); }
 
 .prose { font-size: 1.0625rem; line-height: 1.75; }
 .prose p, .prose ul, .prose ol { margin: 0 0 1.25rem; }
@@ -239,7 +276,7 @@ main { view-transition-name: page; }
 .fig-node.is-root { color: var(--muted); }
 .fig-node.is-accent { background: var(--t2); border-color: transparent; }
 .fig-branches { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; width: 100%; margin-top: 1.1rem; position: relative; }
-.fig-branches::before { content: ''; position: absolute; top: -1.1rem; left: 25%; right: 25%; height: .55rem; border: 1px solid var(--faint); border-bottom: 0; border-radius: 6px 6px 0 0; }
+.fig-branches::before { content: ''; position: absolute; top: -1.1rem; left: 25%; right: 25%; height: .55rem; border: 1px solid var(--hairline); border-bottom: 0; border-radius: 6px 6px 0 0; }
 .fig-branch { display: flex; flex-direction: column; align-items: center; gap: .5rem; text-align: center; }
 .fig-edge { font-size: .8rem; color: var(--faint); }
 
@@ -253,7 +290,8 @@ main { view-transition-name: page; }
 .key-in::before { background: var(--t0); }
 .key-out::before { background: var(--line); }
 .fig-cost { display: grid; gap: .45rem; }
-.fig-cost-row { display: grid; grid-template-columns: 6rem 1fr; align-items: center; gap: .75rem; font-size: .75rem; color: var(--muted); }
+.fig-cost-row { display: grid; grid-template-columns: 6rem 1fr 2.5rem; align-items: center; gap: .75rem; font-size: .75rem; color: var(--muted); }
+.fig-cost-val { font-family: var(--mono); color: var(--faint); text-align: right; }
 .fig-cost-bar { height: .6rem; width: var(--w); background: var(--line); border-radius: 99px; }
 .fig-cost-bar.is-accent { background: var(--t2); }
 
@@ -262,4 +300,66 @@ main { view-transition-name: page; }
   .fig-bar-rest { color: transparent; } /* no room for the label; scale and caption carry it */
   .fig-branches::before { display: none; }
   .post-body h2 { font-size: 1.35rem; }
+}
+
+/* figure bars draw themselves as they scroll into view */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fig-bar, .fig-cost-bar {
+      animation: bar-in 1ms linear both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+    .fig-cost-bar { animation-name: bar-in-pill; }
+  }
+}
+@keyframes bar-in { from { clip-path: inset(0 100% 0 0 round 6px); } to { clip-path: inset(0 round 6px); } }
+@keyframes bar-in-pill { from { clip-path: inset(0 100% 0 0 round 99px); } to { clip-path: inset(0 round 99px); } }
+
+/* end of post */
+.eot { margin: 3rem 0 0; font: .7rem var(--mono); color: var(--faint); }
+
+/* previous / next notes */
+.post-nav {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 4rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  font-size: .9rem;
+}
+.post-nav a { display: grid; gap: .2rem; align-content: start; text-decoration: none; color: var(--text); }
+.post-nav a:hover .dim { color: var(--muted); }
+.post-nav .dim { transition: color .3s ease; }
+.post-nav .right { margin-left: auto; text-align: right; }
+.post-nav .dim { font: .75rem var(--mono); color: var(--faint); }
+
+/* copy-email button: both labels share one grid cell, so swapping them never shifts layout */
+.email { display: inline-flex; align-items: baseline; gap: .5rem; }
+.copy {
+  display: inline-grid;
+  padding: 0 .4rem;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: none;
+  color: var(--faint);
+  font: .7rem/1.5 var(--mono);
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.copy:hover { color: var(--text); border-color: var(--hairline); }
+.copy-label { grid-area: 1 / 1; transition: opacity .15s ease; }
+.copy-label + .copy-label, .copy[data-copied] .copy-label:first-child { opacity: 0; }
+.copy[data-copied] .copy-label + .copy-label { opacity: 1; }
+.copy[data-copied] { color: var(--text); }
+@media (prefers-reduced-motion: no-preference) {
+  .copy-label { transition: opacity .15s ease, transform .2s var(--ease-out); }
+  .copy-label + .copy-label { transform: translateY(4px); }
+  .copy[data-copied] .copy-label:first-child { transform: translateY(-4px); }
+  .copy[data-copied] .copy-label + .copy-label { transform: none; }
+}
+
+@media (max-width: 520px) {
+  .post-nav { flex-direction: column; }
+  .post-nav .right { margin-left: 0; text-align: left; }
 }
