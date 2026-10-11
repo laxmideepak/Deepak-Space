@@ -2,8 +2,9 @@
 import Base from '../layouts/Base.astro';
 import inference from '../data/inference.json';
 
-const MODEL = inference.model;
-const modelName = MODEL.split('/').pop()!.replace(/-Instruct$/, '');
+// Same weights as the homepage export, converted to ONNX for the browser.
+const MODEL = `onnx-community/${inference.model.split('/').pop()}`;
+const modelName = inference.model.split('/').pop()!.replace(/-Instruct$/, '');
 const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla', 'దీపక్ నేలపాటి', 'Always up for a game.'];
 ---
 <Base title="try" description="Tokenize your own words, then see how much of you a small language model can predict. Runs entirely in your browser.">
@@ -26,27 +27,27 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
     <p class="try-ids" data-tok-ids-out hidden></p>
   </section>
 
-  <section class="try" data-predict data-model={MODEL} data-home-alpha={inference.alpha} data-mine-system={inference.system} data-mine-line={inference.lines[0]}>
+  <section class="try" data-predict data-model={MODEL} data-home-alpha={inference.alpha} data-mine-system={inference.system} data-mine-line={inference.lines.join('\n')}>
     <h2>Can a model predict you?</h2>
     <p class="try-hint">
-      The homepage shows {modelName} reading my system prompt and trying to guess my words; it predicted
-      {Math.round(inference.alpha * 100)}% of them. Give it yours. Leave the system prompt empty and it uses
-      its default (“You are Qwen…”).
+      The homepage shows {modelName} reading my system prompt and trying to guess my words. Give it yours,
+      and it’ll compare how predictable you are with me. Leave the system prompt empty and it uses its
+      default (“You are Qwen…”).
     </p>
     <label class="try-label" for="sys-input">system prompt <span>(optional)</span></label>
     <textarea id="sys-input" class="try-input" rows="2" spellcheck="false" placeholder="You are …, a … who …"></textarea>
-    <label class="try-label" for="say-input">something you’d say</label>
-    <input id="say-input" class="try-input" type="text" maxlength="280" spellcheck="false" placeholder="One sentence, the way you’d actually say it." />
+    <label class="try-label" for="say-input">something you’d say <span>(enter to score, shift+enter for a new line)</span></label>
+    <textarea id="say-input" class="try-input" rows="2" maxlength="400" spellcheck="false" placeholder="A sentence or two, the way you’d actually say it."></textarea>
     <p class="try-actions">
-      <button type="button" class="try-btn" data-load>Load the model · ~480 MB, once</button>
+      <button type="button" class="try-btn" data-load>Load the model · ~510 MB, once</button>
       <button type="button" class="try-btn" data-score hidden>Score it</button>
       <button type="button" class="chip" data-mine>use mine</button>
     </p>
-    <p class="try-status" data-status aria-live="polite">The model downloads to your browser cache the first time (about 480 MB with WebGPU, 512 MB without). Best on a laptop.</p>
+    <p class="try-status" data-status aria-live="polite">The model (8-bit, about 510 MB) downloads to your browser cache the first time and runs on your CPU. Best on a laptop.</p>
     <progress class="try-progress" data-progress max="100" value="0" hidden></progress>
     <p class="reply try-out" data-out aria-hidden="true"></p>
     <p class="try-verdict" data-verdict aria-live="polite"></p>
-    <p class="try-note">Runs a quantized copy of the same model in your browser, so the odds can differ slightly from the homepage’s full-precision run.</p>
+    <p class="try-note">Runs an 8-bit copy of the same model in your browser, so the odds differ slightly from the homepage’s full-precision run. “use mine” is a quick way to see how close it gets.</p>
   </section>
 
   <script>
@@ -101,7 +102,7 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
     const MODEL = box.dataset.model!;
     const homeAlpha = Number(box.dataset.homeAlpha);
     const sysInput = box.querySelector<HTMLTextAreaElement>('#sys-input')!;
-    const sayInput = box.querySelector<HTMLInputElement>('#say-input')!;
+    const sayInput = box.querySelector<HTMLTextAreaElement>('#say-input')!;
     const loadBtn = box.querySelector<HTMLButtonElement>('[data-load]')!;
     const scoreBtn = box.querySelector<HTMLButtonElement>('[data-score]')!;
     const status = box.querySelector<HTMLElement>('[data-status]')!;
@@ -115,6 +116,8 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
     });
 
     let tokenizer: any, model: any, lib: any;
+    // My own text, scored by this same in-browser model, so the comparison is like for like.
+    let mineAlpha: number | undefined;
 
     loadBtn.addEventListener('click', async () => {
       loadBtn.disabled = true;
@@ -122,15 +125,19 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
       status.textContent = 'Loading the runtime…';
       try {
         lib = await import('@huggingface/transformers');
-        const webgpu = 'gpu' in navigator && !!(await (navigator as any).gpu?.requestAdapter());
+        const files: Record<string, [number, number]> = {};
+        // 8-bit on CPU everywhere: the 4-bit WebGPU build drifts too far from the homepage's
+        // full-precision odds to be a fair comparison, and CPU gives every browser the same numbers.
         const opts = {
-          device: webgpu ? 'webgpu' : 'wasm',
-          dtype: webgpu ? 'q4f16' : 'q8',
+          device: 'wasm',
+          dtype: 'q8',
+          // Sum per-file progress; the weights file dominates.
           progress_callback: (p: any) => {
-            if (p.status === 'progress_total') {
-              progress.value = p.progress;
-              status.textContent = `Downloading ${webgpu ? 'with WebGPU' : 'for CPU'}: ${Math.round(p.loaded / 1e6)} / ${Math.round(p.total / 1e6)} MB`;
-            }
+            if (p.status !== 'progress' || !p.total) return;
+            files[p.file] = [p.loaded, p.total];
+            const [loaded, total] = Object.values(files).reduce((a, f) => [a[0] + f[0], a[1] + f[1]], [0, 0]);
+            progress.value = (loaded / total) * 100;
+            status.textContent = `Downloading: ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB`;
           },
         };
         tokenizer = await lib.AutoTokenizer.from_pretrained(MODEL);
@@ -138,12 +145,12 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
         progress.hidden = true;
         loadBtn.hidden = true;
         scoreBtn.hidden = false;
-        status.textContent = `Model ready (${opts.device}, ${opts.dtype}). Type a sentence and score it.`;
+        status.textContent = 'Model ready. Write something and score it.';
         sayInput.focus();
       } catch (err) {
         loadBtn.disabled = false;
         progress.hidden = true;
-        status.textContent = `Couldn’t load the model: ${(err as Error).message}. A recent desktop Chrome, Edge or Safari works best.`;
+        status.textContent = `Couldn’t load the model: ${(err as Error).message}. A recent desktop browser works best.`;
       }
     });
 
@@ -183,6 +190,7 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
       status.textContent = 'Reading…';
       try {
         const tokens = await score(sysInput.value, sentence);
+        mineAlpha ??= (await score(box.dataset.mineSystem!, box.dataset.mineLine!)).reduce((a, t, _, all) => a + (t.hit ? 1 / all.length : 0), 0);
         result.replaceChildren(...tokens.map((t, i) => {
           const span = document.createElement('span');
           span.className = `dt on t${i % 4}${t.hit ? '' : ' miss'}`;
@@ -194,8 +202,9 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
         const hits = tokens.filter((t) => t.hit).length;
         const alpha = hits / tokens.length;
         const surprise = tokens.reduce((a, t) => (t.bits > a.bits ? t : a), tokens[0]);
-        const compare = alpha < homeAlpha ? 'You’re harder to predict than me.' : alpha > homeAlpha ? 'You’re easier to predict than me.' : 'Exactly as predictable as me.';
-        verdict.textContent = `The model predicted ${hits} of your ${tokens.length} tokens (α ${alpha.toFixed(2)}); it predicted ${Math.round(homeAlpha * 100)}% of mine. ${compare} Most surprising: “${surprise.text.trim()}” at ${surprise.bits.toFixed(1)} bits.`;
+        const mine = mineAlpha!;
+        const compare = Math.abs(alpha - mine) < 0.005 ? 'Exactly as predictable as me.' : alpha < mine ? 'You’re harder to predict than me.' : 'You’re easier to predict than me.';
+        verdict.textContent = `The model predicted ${hits} of your ${tokens.length} tokens (α ${alpha.toFixed(2)}). Scored the same way in your browser, it predicts ${Math.round(mine * 100)}% of me (${Math.round(homeAlpha * 100)}% at full precision on the homepage). ${compare} Most surprising: “${surprise.text.trim()}” at ${surprise.bits.toFixed(1)} bits.`;
         status.textContent = 'Struck-through words above yours are what the model expected instead.';
       } catch (err) {
         status.textContent = `Couldn’t score that: ${(err as Error).message}`;
@@ -203,6 +212,8 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
         scoreBtn.disabled = false;
       }
     });
-    sayInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !scoreBtn.hidden) scoreBtn.click(); });
+    sayInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !scoreBtn.hidden) { e.preventDefault(); scoreBtn.click(); }
+    });
   </script>
 </Base>

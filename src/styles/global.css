@@ -472,7 +472,7 @@ main { view-transition-name: page; }
 .try-btn:disabled { opacity: .5; cursor: progress; }
 .try-btn[hidden], .try-progress[hidden], .try-ids[hidden] { display: none; }
 .try-progress { width: 100%; height: .35rem; margin-top: .75rem; accent-color: #60a5fa; }
-.try-out { width: auto; margin: 1.5rem 0 0; min-height: 0; }
+.try-out { width: auto; margin: 1.5rem 0 0; white-space: pre-wrap; }
 .try-out:empty { display: none; }
 .try-verdict { margin: .75rem 0 0; color: var(--text); text-wrap: pretty; }
 .try-verdict:empty { display: none; }
