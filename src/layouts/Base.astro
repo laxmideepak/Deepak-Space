@@ -18,6 +18,11 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#161616" />
+    <script is:inline>
+      // Before first paint: plain reading mode, and whether this session already watched the decode ("KV hit").
+      try { if (localStorage.getItem('plain')) document.documentElement.classList.add('plain'); } catch {}
+      try { document.documentElement.dataset.kv = sessionStorage.getItem('kv') === '1' ? 'hit' : 'cold'; } catch {}
+    </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{fullTitle}</title>
@@ -65,9 +70,27 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
         <span class="sr-only" role="status" aria-live="polite"></span>
       </span>
       <a href="/rss.xml">rss</a>
+      <button type="button" class="plain-toggle" data-plain aria-pressed="false" hidden>no tokens, please</button>
     </footer>
     <script>
-      // The only client JS on the site: copy the email address. The button stays hidden without JS.
+      // "No tokens, please": plain reading mode, remembered per browser. Hidden without JS.
+      const plain = document.querySelector<HTMLButtonElement>('[data-plain]');
+      if (plain) {
+        const sync = () => {
+          const on = document.documentElement.classList.contains('plain');
+          plain.setAttribute('aria-pressed', String(on));
+          plain.textContent = on ? 'tokens, please' : 'no tokens, please';
+        };
+        plain.hidden = false;
+        sync();
+        plain.addEventListener('click', () => {
+          const on = document.documentElement.classList.toggle('plain');
+          try { on ? localStorage.setItem('plain', '1') : localStorage.removeItem('plain'); } catch {}
+          sync();
+        });
+      }
+
+      // Copy the email address. The button stays hidden without JS.
       for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
         const status = button.nextElementSibling as HTMLElement;
         let timer: ReturnType<typeof setTimeout>;

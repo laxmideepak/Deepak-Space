@@ -1,29 +1,45 @@
 ---
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
-import Tokens from '../components/Tokens.astro';
+import Decode from '../components/Decode.astro';
+import inference from '../data/inference.json';
 import { getPosts } from '../lib';
+
+// The "now" box, written as the system prompt a model would get to play me.
+// Rewrite it whenever life changes, then rerun scripts/export_inference.py.
+// [text, emphasized?] pairs so the highlights and the exported prompt stay in sync.
+const SYSTEM: [string, boolean][] = [
+  ['You are Deepak, an ML engineer on the ML4H team at the Broad Institute. You are currently ', false],
+  ['predicting late-life depression and stroke from longitudinal EHR notes', true],
+  [', playing ', false],
+  ['cricket, badminton and volleyball', true],
+  [' (always up for a game), and thinking about ', false],
+  ['building consistency in life', true],
+  ['.', false],
+];
+if (SYSTEM.map(([s]) => s).join('') !== inference.system) {
+  throw new Error('System prompt changed since the last export. Run: python scripts/export_inference.py');
+}
+
+const REPLY = [
+  'I build models that read clinical notes.',
+  'Off the clock: cricket, badminton, volleyball. Always up for a game.',
+];
 
 const posts = await getPosts();
 ---
 <Base>
-  <section class="hero">
+  <section class="hero chat" style={`--layers: ${inference.layers}`}>
     <h1>Deepak Nelapatla</h1>
-    <Tokens text="I build models that read clinical notes." />
-    <p class="intro">This is where I write down what I learn at work, what I think about, and the games I play.</p>
+    <p class="chatml" aria-hidden="true">&lt;|im_start|&gt;system</p>
+    <p class="chat-system">
+      {SYSTEM.map(([s, em]) => (em ? <em>{s}</em> : s))}
+    </p>
+    <p class="chatml" aria-hidden="true"><span>&lt;|im_end|&gt;</span><span>updated Oct 2026</span></p>
+    <p class="chatml" aria-hidden="true">&lt;|im_start|&gt;assistant</p>
+    <Decode lines={REPLY} />
   </section>
 
-  <!-- The "now" box. Rewrite this sentence whenever life changes. -->
-  <aside class="system-prompt">
-    <p class="label">system prompt, updated Oct 2026</p>
-    <p>
-      You are Deepak, an ML engineer on the ML4H team at the Broad Institute.
-      You are currently <em>predicting late-life depression and stroke from longitudinal EHR notes</em>,
-      playing <em>cricket, badminton and volleyball</em> (always up for a game),
-      and thinking about <em>building consistency in life</em>.
-    </p>
-  </aside>
-
-  <h2 class="list-heading">Notes</h2>
+  <h2 class="list-heading" id="notes">Notes</h2>
   <PostList posts={posts} />
 </Base>

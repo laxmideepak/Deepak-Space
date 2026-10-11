@@ -1,0 +1,766 @@
+{
+ "model": "Qwen/Qwen2.5-0.5B-Instruct",
+ "layers": 24,
+ "system": "You are Deepak, an ML engineer on the ML4H team at the Broad Institute. You are currently predicting late-life depression and stroke from longitudinal EHR notes, playing cricket, badminton and volleyball (always up for a game), and thinking about building consistency in life.",
+ "lines": [
+  "I build models that read clinical notes.",
+  "Off the clock: cricket, badminton, volleyball. Always up for a game."
+ ],
+ "tokens": [
+  {
+   "text": "I",
+   "p": 0.0893,
+   "bits": 3.48,
+   "hit": false,
+   "guess": "Hello",
+   "top5": [
+    [
+     "Hello",
+     0.1706
+    ],
+    [
+     "As",
+     0.1329
+    ],
+    [
+     "I",
+     0.0893
+    ],
+    [
+     "Good",
+     0.0669
+    ],
+    [
+     "Hey",
+     0.0531
+    ]
+   ]
+  },
+  {
+   "text": " build",
+   "p": 0.0,
+   "bits": 19.23,
+   "hit": false,
+   "guess": "'m",
+   "top5": [
+    [
+     "'m",
+     0.6104
+    ],
+    [
+     " appreciate",
+     0.0861
+    ],
+    [
+     " am",
+     0.0765
+    ],
+    [
+     " understand",
+     0.0343
+    ],
+    [
+     " apologize",
+     0.0165
+    ]
+   ]
+  },
+  {
+   "text": " models",
+   "p": 0.0031,
+   "bits": 8.34,
+   "hit": false,
+   "guess": " consistency",
+   "top5": [
+    [
+     " consistency",
+     0.4675
+    ],
+    [
+     " on",
+     0.2553
+    ],
+    [
+     " my",
+     0.0427
+    ],
+    [
+     " upon",
+     0.0218
+    ],
+    [
+     " consistent",
+     0.0181
+    ]
+   ]
+  },
+  {
+   "text": " that",
+   "p": 0.0891,
+   "bits": 3.49,
+   "hit": false,
+   "guess": " to",
+   "top5": [
+    [
+     " to",
+     0.2791
+    ],
+    [
+     " and",
+     0.1763
+    ],
+    [
+     ",",
+     0.1163
+    ],
+    [
+     " for",
+     0.0957
+    ],
+    [
+     " that",
+     0.0891
+    ]
+   ]
+  },
+  {
+   "text": " read",
+   "p": 0.0004,
+   "bits": 11.22,
+   "hit": false,
+   "guess": " predict",
+   "top5": [
+    [
+     " predict",
+     0.3279
+    ],
+    [
+     " help",
+     0.1006
+    ],
+    [
+     " learn",
+     0.0874
+    ],
+    [
+     " understand",
+     0.0414
+    ],
+    [
+     " can",
+     0.0382
+    ]
+   ]
+  },
+  {
+   "text": " clinical",
+   "p": 0.0073,
+   "bits": 7.1,
+   "hit": false,
+   "guess": " and",
+   "top5": [
+    [
+     " and",
+     0.2199
+    ],
+    [
+     " E",
+     0.0972
+    ],
+    [
+     " data",
+     0.0841
+    ],
+    [
+     " through",
+     0.0665
+    ],
+    [
+     " from",
+     0.0387
+    ]
+   ]
+  },
+  {
+   "text": " notes",
+   "p": 0.6618,
+   "bits": 0.6,
+   "hit": true,
+   "guess": " notes",
+   "top5": [
+    [
+     " notes",
+     0.6618
+    ],
+    [
+     " data",
+     0.175
+    ],
+    [
+     " records",
+     0.025
+    ],
+    [
+     " and",
+     0.0169
+    ],
+    [
+     " E",
+     0.0124
+    ]
+   ]
+  },
+  {
+   "text": ".\n",
+   "p": 0.0001,
+   "bits": 13.24,
+   "hit": false,
+   "guess": " to",
+   "top5": [
+    [
+     " to",
+     0.2762
+    ],
+    [
+     ",",
+     0.214
+    ],
+    [
+     " and",
+     0.1948
+    ],
+    [
+     " from",
+     0.1235
+    ],
+    [
+     " for",
+     0.0483
+    ]
+   ]
+  },
+  {
+   "text": "Off",
+   "p": 0.0,
+   "bits": 16.72,
+   "hit": false,
+   "guess": "I",
+   "top5": [
+    [
+     "I",
+     0.3675
+    ],
+    [
+     "That",
+     0.0466
+    ],
+    [
+     "In",
+     0.0264
+    ],
+    [
+     "As",
+     0.0255
+    ],
+    [
+     "What",
+     0.0222
+    ]
+   ]
+  },
+  {
+   "text": " the",
+   "p": 0.2593,
+   "bits": 1.95,
+   "hit": true,
+   "guess": " the",
+   "top5": [
+    [
+     " the",
+     0.2593
+    ],
+    [
+     " to",
+     0.1357
+    ],
+    [
+     "-field",
+     0.0655
+    ],
+    [
+     "ense",
+     0.0451
+    ],
+    [
+     "-topic",
+     0.0444
+    ]
+   ]
+  },
+  {
+   "text": " clock",
+   "p": 0.0854,
+   "bits": 3.55,
+   "hit": false,
+   "guess": " top",
+   "top5": [
+    [
+     " top",
+     0.316
+    ],
+    [
+     " cuff",
+     0.2672
+    ],
+    [
+     " bat",
+     0.1325
+    ],
+    [
+     " clock",
+     0.0854
+    ],
+    [
+     " back",
+     0.0428
+    ]
+   ]
+  },
+  {
+   "text": ":",
+   "p": 0.0578,
+   "bits": 4.11,
+   "hit": false,
+   "guess": ",",
+   "top5": [
+    [
+     ",",
+     0.7032
+    ],
+    [
+     ":",
+     0.0578
+    ],
+    [
+     "?",
+     0.0446
+    ],
+    [
+     ".",
+     0.0215
+    ],
+    [
+     " I",
+     0.0169
+    ]
+   ]
+  },
+  {
+   "text": " cricket",
+   "p": 0.0141,
+   "bits": 6.14,
+   "hit": false,
+   "guess": " I",
+   "top5": [
+    [
+     " I",
+     0.1895
+    ],
+    [
+     " Playing",
+     0.0756
+    ],
+    [
+     " Cricket",
+     0.0433
+    ],
+    [
+     " playing",
+     0.0165
+    ],
+    [
+     " cricket",
+     0.0141
+    ]
+   ]
+  },
+  {
+   "text": ",",
+   "p": 0.3833,
+   "bits": 1.38,
+   "hit": true,
+   "guess": ",",
+   "top5": [
+    [
+     ",",
+     0.3833
+    ],
+    [
+     " and",
+     0.1051
+    ],
+    [
+     "!",
+     0.0615
+    ],
+    [
+     "ing",
+     0.0527
+    ],
+    [
+     ".",
+     0.0492
+    ]
+   ]
+  },
+  {
+   "text": " bad",
+   "p": 0.679,
+   "bits": 0.56,
+   "hit": true,
+   "guess": " bad",
+   "top5": [
+    [
+     " bad",
+     0.679
+    ],
+    [
+     " volleyball",
+     0.044
+    ],
+    [
+     " basketball",
+     0.03
+    ],
+    [
+     " golf",
+     0.0287
+    ],
+    [
+     " tennis",
+     0.0278
+    ]
+   ]
+  },
+  {
+   "text": "m",
+   "p": 0.9997,
+   "bits": 0.0,
+   "hit": true,
+   "guess": "m",
+   "top5": [
+    [
+     "m",
+     0.9997
+    ],
+    [
+     " m",
+     0.0001
+    ],
+    [
+     "-m",
+     0.0
+    ],
+    [
+     "b",
+     0.0
+    ],
+    [
+     "[m",
+     0.0
+    ]
+   ]
+  },
+  {
+   "text": "inton",
+   "p": 0.9997,
+   "bits": 0.0,
+   "hit": true,
+   "guess": "inton",
+   "top5": [
+    [
+     "inton",
+     0.9997
+    ],
+    [
+     "int",
+     0.0002
+    ],
+    [
+     "ints",
+     0.0
+    ],
+    [
+     " tennis",
+     0.0
+    ],
+    [
+     "ou",
+     0.0
+    ]
+   ]
+  },
+  {
+   "text": ",",
+   "p": 0.7595,
+   "bits": 0.4,
+   "hit": true,
+   "guess": ",",
+   "top5": [
+    [
+     ",",
+     0.7595
+    ],
+    [
+     " and",
+     0.1769
+    ],
+    [
+     ".",
+     0.0248
+    ],
+    [
+     " or",
+     0.0056
+    ],
+    [
+     ".\n",
+     0.0055
+    ]
+   ]
+  },
+  {
+   "text": " volleyball",
+   "p": 0.1297,
+   "bits": 2.95,
+   "hit": false,
+   "guess": " and",
+   "top5": [
+    [
+     " and",
+     0.7632
+    ],
+    [
+     " volleyball",
+     0.1297
+    ],
+    [
+     " or",
+     0.0124
+    ],
+    [
+     " tennis",
+     0.0074
+    ],
+    [
+     " golf",
+     0.0064
+    ]
+   ]
+  },
+  {
+   "text": ".",
+   "p": 0.3649,
+   "bits": 1.45,
+   "hit": true,
+   "guess": ".",
+   "top5": [
+    [
+     ".",
+     0.3649
+    ],
+    [
+     ",",
+     0.2349
+    ],
+    [
+     "!",
+     0.1144
+    ],
+    [
+     ".\n",
+     0.0547
+    ],
+    [
+     "\n",
+     0.0306
+    ]
+   ]
+  },
+  {
+   "text": " Always",
+   "p": 0.0007,
+   "bits": 10.43,
+   "hit": false,
+   "guess": "<|im_end|>",
+   "top5": [
+    [
+     "<|im_end|>",
+     0.7711
+    ],
+    [
+     " I",
+     0.0375
+    ],
+    [
+     " Let",
+     0.0166
+    ],
+    [
+     " Playing",
+     0.0055
+    ],
+    [
+     " Enjoy",
+     0.0054
+    ]
+   ]
+  },
+  {
+   "text": " up",
+   "p": 0.4421,
+   "bits": 1.18,
+   "hit": true,
+   "guess": " up",
+   "top5": [
+    [
+     " up",
+     0.4421
+    ],
+    [
+     " ready",
+     0.2243
+    ],
+    [
+     " looking",
+     0.0418
+    ],
+    [
+     " a",
+     0.025
+    ],
+    [
+     " on",
+     0.0163
+    ]
+   ]
+  },
+  {
+   "text": " for",
+   "p": 0.9889,
+   "bits": 0.02,
+   "hit": true,
+   "guess": " for",
+   "top5": [
+    [
+     " for",
+     0.9889
+    ],
+    [
+     ".",
+     0.0042
+    ],
+    [
+     " to",
+     0.0016
+    ],
+    [
+     " and",
+     0.0011
+    ],
+    [
+     "!",
+     0.0009
+    ]
+   ]
+  },
+  {
+   "text": " a",
+   "p": 0.9358,
+   "bits": 0.1,
+   "hit": true,
+   "guess": " a",
+   "top5": [
+    [
+     " a",
+     0.9358
+    ],
+    [
+     " an",
+     0.0143
+    ],
+    [
+     " another",
+     0.0131
+    ],
+    [
+     " game",
+     0.01
+    ],
+    [
+     " games",
+     0.0037
+    ]
+   ]
+  },
+  {
+   "text": " game",
+   "p": 0.9682,
+   "bits": 0.05,
+   "hit": true,
+   "guess": " game",
+   "top5": [
+    [
+     " game",
+     0.9682
+    ],
+    [
+     " match",
+     0.004
+    ],
+    [
+     " good",
+     0.0023
+    ],
+    [
+     " round",
+     0.002
+    ],
+    [
+     " cricket",
+     0.002
+    ]
+   ]
+  },
+  {
+   "text": ".",
+   "p": 0.5193,
+   "bits": 0.95,
+   "hit": true,
+   "guess": ".",
+   "top5": [
+    [
+     ".",
+     0.5193
+    ],
+    [
+     "!",
+     0.3795
+    ],
+    [
+     ",",
+     0.0254
+    ],
+    [
+     ".\n",
+     0.0097
+    ],
+    [
+     "!\n",
+     0.008
+    ]
+   ]
+  }
+ ],
+ "alpha": 0.5
+}

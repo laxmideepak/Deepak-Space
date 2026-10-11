@@ -14,7 +14,7 @@ import Base from '../layouts/Base.astro';
     </ul>
 
     <h2>Why “tokenizer”</h2>
-    <p>Before a language model can read anything, a tokenizer breaks the text into small pieces. That’s what this site is for me: breaking work, life and play into pieces small enough to think about. Hover the line on the homepage to see it tokenized for real.</p>
+    <p>Before a language model can read anything, a tokenizer breaks the text into small pieces. That’s what this site is for me: breaking work, life and play into pieces small enough to think about. On the homepage, a small model reads my system prompt and tries to predict what I’ll say, one token at a time. Where it guesses wrong, that’s me.</p>
 
     <h2>How notes grow</h2>
     <p>Most of these notes start with a pen in a paper notebook. Each one is marked with a stage:</p>
@@ -28,7 +28,8 @@ import Base from '../layouts/Base.astro';
     <dl class="post-facts">
       <div><dt>Tokenizer</dt><dd>o200k_base (GPT-4o) via js-tiktoken, counted at build</dd></div>
       <div><dt>Type</dt><dd>Funnel Display, Geist, Geist Mono</dd></div>
-      <div><dt>Built with</dt><dd>Astro; the only client JS copies my email</dd></div>
+      <div><dt>Decode</dt><dd>Qwen2.5-0.5B-Instruct, teacher-forced offline on my own words</dd></div>
+      <div><dt>Built with</dt><dd>Astro, a few small inline scripts, no framework</dd></div>
       <div><dt>Hosted on</dt><dd>Vercel</dd></div>
     </dl>
 

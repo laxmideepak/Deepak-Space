@@ -72,7 +72,7 @@ h1, h2 { font-family: var(--display); font-weight: 600; letter-spacing: -.025em;
 h1 { font-size: clamp(2.25rem, 6.5vw, 3rem); line-height: 1.05; margin: 0 0 1rem; }
 h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
 h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
-.prose p, .prose li, .intro, .system-prompt p { text-wrap: pretty; }
+.prose p, .prose li, .intro, .chat-system { text-wrap: pretty; }
 
 /* hero + tokenized intro */
 .hero { margin-bottom: 3rem; }
@@ -119,19 +119,66 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 .pills a { border: 1px solid var(--line); border-radius: 99px; padding: .3rem .85rem; font-size: .85rem; color: var(--muted); text-decoration: none; transition: border-color .15s ease, color .15s ease; }
 .pills a:hover { border-color: var(--faint); color: var(--text); }
 
-/* system prompt (now box) */
-.system-prompt {
-  background: var(--raised);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 1.1rem 1.25rem 1.2rem;
-  margin-bottom: 3.5rem;
-  font-size: .95rem;
-  color: var(--muted);
+/* homepage: a ChatML turn. The system prompt is the "now" box; the reply decodes. */
+.chat { margin-bottom: 3.5rem; }
+.chat h1 { margin-bottom: 1.25rem; }
+.chatml {
+  display: flex; justify-content: space-between; gap: 1rem;
+  margin: 0; font: .75rem/1.7 var(--mono); color: var(--hairline);
 }
-.system-prompt p { margin: 0; }
-.system-prompt .label { font: .75rem var(--mono); color: var(--faint); margin-bottom: .5rem; }
-.system-prompt em { font-style: normal; color: var(--text); }
+.chat-system { margin: .2rem 0 .3rem; font-size: .95rem; color: var(--muted); }
+.chat-system em { font-style: normal; color: var(--text); }
+/* prefill: the whole prompt brightens at once, one step per model layer (skipped on a KV hit) */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-kv="hit"]):not(.plain) .chat-system { animation: prefill .35s steps(var(--layers, 24)) .1s backwards; }
+}
+@keyframes prefill { from { color: var(--hairline); } }
+
+.reply { position: relative; width: fit-content; margin: .3rem 0 .2rem; font-size: 1.25rem; line-height: 1.6; cursor: default; }
+.dt { border-radius: 3px; transition: opacity .2s ease, background-color .25s ease; }
+.dt.miss { text-decoration: underline dotted rgb(96 165 250 / .7); text-decoration-thickness: 1px; text-underline-offset: .28em; }
+.decode.decoding .dt:not(.on) { opacity: .35; } /* "prefill ink": faint, never invisible */
+.decode.decoding .dt.contested { opacity: .15; }
+.ghost { margin-right: .2em; color: var(--faint); font-style: italic; text-decoration: line-through; }
+@media (prefers-reduced-motion: no-preference) {
+  .dt.landed { animation: landed .6s ease-out; }
+}
+@keyframes landed { from { background-color: rgb(96 165 250 / .35); } }
+/* once decoded: hover or focus shows the tokens, the active one gets the model's top-5 */
+.decode.done .reply:is(:hover, :focus) .dt { background: var(--tint); box-shadow: 1px 0 0 var(--bg); }
+.decode.done .reply .dt.active { background: rgb(96 165 250 / .35); }
+.legend { margin: .5rem 0 0; font: .75rem var(--mono); color: var(--faint); }
+.statusbar {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.25rem;
+  margin: 1.25rem 0 0; padding: .45rem 0;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  font: .75rem var(--mono); color: var(--faint);
+}
+.statusbar b { font-weight: 400; color: var(--text); }
+.statusbar .tagline { margin-right: auto; color: var(--muted); }
+.decode { position: relative; }
+.pop {
+  position: absolute; z-index: 2; width: 18rem; padding: .7rem .85rem;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px;
+  font: .75rem/1.5 var(--mono); color: var(--muted);
+  box-shadow: 0 8px 24px rgb(0 0 0 / .35);
+}
+.pop p { margin: 0; }
+.pop-head { color: var(--text); margin-bottom: .4rem !important; }
+.pop-row { display: grid; grid-template-columns: 6.5rem 1fr 3.5rem; align-items: center; gap: .5rem; }
+.pop-row span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pop-row span:last-child { text-align: right; }
+.pop-bar { height: .4rem; border-radius: 99px; background: linear-gradient(90deg, #60a5fa var(--w), var(--line) var(--w)); }
+.pop-foot { margin-top: .45rem !important; color: var(--faint); }
+@media (max-width: 520px) {
+  .pop { position: fixed; inset: auto 0 0 0 !important; width: auto; border-radius: 12px 12px 0 0; padding-bottom: calc(.85rem + env(safe-area-inset-bottom)); }
+  .statusbar .tagline { flex-basis: 100%; }
+}
+
+/* "no tokens, please": plain reading, no ChatML chrome or token styling */
+html.plain .chatml, html.plain .legend, html.plain .statusbar, html.plain .tokens .count { display: none; }
+html.plain .dt.miss { text-decoration: none; }
+html.plain .tokens > span[class^="t"], html.plain .decode .dt { background: none !important; box-shadow: none !important; }
 
 /* post list */
 .list-heading { margin-top: 0; }
@@ -365,3 +412,12 @@ main { view-transition-name: page; }
   .post-nav { flex-direction: column; }
   .post-nav .right { margin-left: 0; text-align: left; }
 }
+
+/* footer "no tokens, please" toggle, styled like the copy button */
+.plain-toggle {
+  margin-left: auto; padding: 0 .5rem;
+  border: 1px solid var(--line); border-radius: 99px; background: none;
+  color: var(--faint); font: .7rem/1.5 var(--mono); cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.plain-toggle:hover, .plain-toggle[aria-pressed="true"] { color: var(--text); border-color: var(--hairline); }
