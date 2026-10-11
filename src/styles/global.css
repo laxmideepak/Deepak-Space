@@ -111,7 +111,7 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 .chat-system .st.active { background: rgb(96 165 250 / .6); color: var(--text); }
 /* prefill: the whole prompt brightens at once, one step per model layer (skipped on a KV hit) */
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-kv="hit"]):not(.plain) .chat-system { animation: prefill .35s steps(var(--layers, 24)) .1s backwards; }
+  html:not([data-kv="hit"]):not(.plain):not(.booting) .chat-system { animation: prefill .35s steps(var(--layers, 24)) .1s backwards; }
 }
 @keyframes prefill { from { color: var(--hairline); } }
 
@@ -581,3 +581,35 @@ html:not(.plain):has(.ctxline) { scroll-padding-bottom: 3rem; }
 .dt[data-guess].resampling::before { opacity: 0; }
 .hallucination { margin: .6rem 0 0; font: .8rem var(--mono); color: #fbbf24; }
 .argmax-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 20; }
+
+/* boot sequence: first visit or reload, the site "trains" on my history, then goes live */
+.boot { display: none; }
+html.booting { overflow: hidden; }
+html.booting .boot {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 1rem;
+  background: var(--bg); animation: boot-out .3s ease 1.45s forwards;
+}
+html.boot-skip .boot { animation: boot-out .15s ease forwards; }
+.boot-inner { width: min(30rem, 100%); font: .78rem/1.5 var(--mono); color: var(--faint); }
+.boot-title { margin: 0 0 1.25rem; font: 600 1.6rem/1 var(--display); letter-spacing: -.02em; color: var(--text); }
+.boot-title span { display: block; margin-top: .4rem; font: .75rem var(--mono); letter-spacing: 0; color: var(--muted); }
+.boot-steps { list-style: none; margin: 0; padding: 0; }
+.boot-steps li {
+  display: grid; grid-template-columns: 5.5rem 1fr 1.5rem; gap: .75rem; padding: .3rem 0;
+  border-bottom: 1px solid var(--line); opacity: 0;
+  animation: boot-in .25s ease calc(var(--i) * .22s + .1s) forwards;
+}
+.boot-k { color: #60a5fa; }
+.boot-v { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boot-s { display: grid; justify-items: end; }
+.boot-s > span { grid-area: 1 / 1; }
+.boot-run { animation: boot-out .1s linear calc(var(--i) * .22s + .3s) forwards; }
+.boot-ok { opacity: 0; color: #4ade80; animation: boot-in .15s ease calc(var(--i) * .22s + .3s) forwards; }
+.boot-steps li:last-child .boot-ok { animation: boot-in .15s ease calc(var(--i) * .22s + .3s) forwards, boot-pulse 1s ease-in-out calc(var(--i) * .22s + .45s) infinite; }
+.boot-loss { display: block; width: 100%; height: 2.25rem; margin-top: 1rem; }
+.boot-loss path { fill: none; stroke: #60a5fa; stroke-width: 1.2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: boot-draw 1.2s ease-out .1s forwards; }
+.boot-foot { display: flex; justify-content: space-between; margin: .25rem 0 0; font-size: .7rem; color: var(--hairline); }
+@keyframes boot-in { to { opacity: 1; } }
+@keyframes boot-out { to { opacity: 0; visibility: hidden; } }
+@keyframes boot-draw { to { stroke-dashoffset: 0; } }
+@keyframes boot-pulse { 50% { opacity: .35; } }

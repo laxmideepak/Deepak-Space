@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { TAGS, getPosts } from '../lib';
+import { TAGS, getPosts, tokensIn } from '../lib';
 
 const SITE_NAME = 'Deepak’s Tokenizer';
 const EMAIL = 'nelapatladeepak@gmail.com';
@@ -10,8 +10,18 @@ const { title, description = 'Deepak Nelapatla, ML engineer. Notes on what I lea
 const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
 const path = Astro.url.pathname;
 const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
+const posts = await getPosts();
 // For the : command line's `open` command.
-const notes = (await getPosts()).map((p) => ({ id: p.id, title: p.data.title }));
+const notes = posts.map((p) => ({ id: p.id, title: p.data.title }));
+// The boot sequence: the site "trains" on first visit or reload, using my real history.
+const corpus = posts.reduce((n, p) => n + tokensIn(p.body), 0);
+const BOOT: [string, string][] = [
+  ['data', `${posts.length} notes · ${corpus.toLocaleString('en-US')} tokens`],
+  ['pretrain', 'B.Tech ECE · JNTU Hyderabad'],
+  ['finetune', 'M.S. CS (AI/ML) · UT Arlington'],
+  ['deploy', 'ML4H · Broad Institute'],
+  ['live', 'deepaktokenizer.vercel.app'],
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -21,7 +31,19 @@ const notes = (await getPosts()).map((p) => ({ id: p.id, title: p.data.title }))
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#161616" />
     <script is:inline>
-      // Before first paint: plain reading mode, and whether this session already watched the decode ("KV hit").
+      // Before first paint: boot sequence, plain reading mode, and whether this session already watched the decode ("KV hit").
+      try {
+        const html = document.documentElement;
+        const reload = performance.getEntriesByType('navigation')[0]?.type === 'reload';
+        if (reload) sessionStorage.removeItem('kv'); // a reload replays everything
+        const internal = document.referrer && new URL(document.referrer).origin === location.origin;
+        const quiet = localStorage.getItem('plain') || localStorage.getItem('still') || document.prerendering
+          || matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!quiet && (reload || (!internal && !sessionStorage.getItem('booted')))) {
+          html.classList.add('booting');
+          sessionStorage.setItem('booted', '1');
+        }
+      } catch {}
       try { if (localStorage.getItem('plain')) document.documentElement.classList.add('plain'); } catch {}
       try { document.documentElement.dataset.kv = sessionStorage.getItem('kv') === '1' ? 'hit' : 'cold'; } catch {}
       try { if (localStorage.getItem('still')) document.documentElement.classList.add('still'); } catch {} // :temperature 0
@@ -52,6 +74,38 @@ const notes = (await getPosts()).map((p) => ({ id: p.id, title: p.data.title }))
     </script>
   </head>
   <body>
+    <div class="boot" aria-hidden="true">
+      <div class="boot-inner">
+        <p class="boot-title">deepak-24 <span>one token at a time</span></p>
+        <ol class="boot-steps">
+          {BOOT.map(([k, v], i) => (
+            <li style={`--i: ${i}`}>
+              <span class="boot-k">{k}</span><span class="boot-v">{v}</span>
+              <span class="boot-s"><span class="boot-run">···</span><span class="boot-ok">{k === 'live' ? '●' : '✓'}</span></span>
+            </li>
+          ))}
+        </ol>
+        <svg class="boot-loss" viewBox="0 0 200 36" preserveAspectRatio="none"><path pathLength="1" d="M0 3 C 30 6, 48 20, 72 24 S 130 31, 200 33" /></svg>
+        <p class="boot-foot"><span>loss</span><span>converged</span></p>
+      </div>
+    </div>
+    <script is:inline>
+      // Fade the boot overlay after ~1.5 s, or at once on any key, tap or scroll.
+      (() => {
+        const html = document.documentElement;
+        if (!html.classList.contains('booting')) return;
+        const events = ['keydown', 'pointerdown', 'wheel', 'touchstart'];
+        const done = () => {
+          if (!html.classList.contains('booting')) return;
+          html.classList.remove('booting', 'boot-skip');
+          events.forEach((e) => removeEventListener(e, skip, true));
+          dispatchEvent(new Event('booted'));
+        };
+        const skip = () => { html.classList.add('boot-skip'); setTimeout(done, 150); };
+        events.forEach((e) => addEventListener(e, skip, true));
+        setTimeout(done, 1750);
+      })();
+    </script>
     <a class="skip" href="#content">skip to content</a>
     <header class="site-header">
       <a href="/" class="site-name">{SITE_NAME}</a>
