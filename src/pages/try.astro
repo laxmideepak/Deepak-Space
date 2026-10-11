@@ -62,16 +62,25 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
     const idsOut = tokBox.querySelector<HTMLElement>('[data-tok-ids-out]')!;
     const encoders: Partial<Record<'gpt2' | 'cl100k_base' | 'o200k_base', Encoder>> = {};
 
+    // GPT-4o's table first (it drives the tokens you see); the two comparison tables
+    // load once the page is idle, so they never compete with the first paint or typing.
     async function loadEncoders() {
       const { Tiktoken } = await import('js-tiktoken/lite');
-      const [gpt2, cl100k, o200k] = await Promise.all([
-        import('js-tiktoken/ranks/gpt2'),
-        import('js-tiktoken/ranks/cl100k_base'),
-        import('js-tiktoken/ranks/o200k_base'),
-      ]);
-      encoders.gpt2 = new Tiktoken(gpt2.default);
-      encoders.cl100k_base = new Tiktoken(cl100k.default);
-      encoders.o200k_base = new Tiktoken(o200k.default);
+      encoders.o200k_base = new Tiktoken((await import('js-tiktoken/ranks/o200k_base')).default);
+      scheduleRender();
+      const idle = (window as any).requestIdleCallback ?? ((f: () => void) => setTimeout(f, 200));
+      idle(async () => {
+        encoders.cl100k_base = new Tiktoken((await import('js-tiktoken/ranks/cl100k_base')).default);
+        encoders.gpt2 = new Tiktoken((await import('js-tiktoken/ranks/gpt2')).default);
+        scheduleRender();
+      });
+    }
+
+    // Retokenize at most once per frame, however fast someone types or pastes.
+    let frame = 0;
+    function scheduleRender() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(renderTokens);
     }
 
     function renderTokens() {
@@ -90,12 +99,12 @@ const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla'
       idsOut.textContent = ids.join(' ');
     }
 
-    input.addEventListener('input', renderTokens);
+    input.addEventListener('input', scheduleRender);
     idsToggle.addEventListener('change', () => { idsOut.hidden = !idsToggle.checked; });
     for (const chip of tokBox.querySelectorAll<HTMLButtonElement>('[data-example]')) {
-      chip.addEventListener('click', () => { input.value = chip.dataset.example!; renderTokens(); input.focus(); });
+      chip.addEventListener('click', () => { input.value = chip.dataset.example!; scheduleRender(); input.focus(); });
     }
-    loadEncoders().then(renderTokens).catch(() => { counts.textContent = 'Couldn’t load the tokenizers. Try reloading.'; });
+    loadEncoders().catch(() => { counts.textContent = 'Couldn’t load the tokenizers. Try reloading.'; });
 
     // ---------- Predict: the homepage's model, teacher-forced on the visitor's sentence ----------
     const box = document.querySelector<HTMLElement>('[data-predict]')!;

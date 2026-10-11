@@ -1,3 +1,7 @@
+@font-face { font-family: 'Geist'; src: url('/fonts/geist.woff2') format('woff2'); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: 'Geist Mono'; src: url('/fonts/geist-mono.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Funnel Display'; src: url('/fonts/funnel-display-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+
 :root {
   --bg: #161616;
   --raised: #1c1c1c;
@@ -278,12 +282,13 @@ footer a:hover { color: var(--text); }
 /* page transitions: only <main> crossfades, header and footer stay still */
 @view-transition { navigation: auto; }
 main { view-transition-name: page; }
+/* opacity only: a blur repaints the whole column every frame, which stutters on big and high-DPI screens */
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(page) { animation: .2s ease both vt-out; }
-  ::view-transition-new(page) { animation: .3s .05s ease both vt-in; }
+  ::view-transition-old(page) { animation: .12s ease-out both vt-out; }
+  ::view-transition-new(page) { animation: .18s ease-out both vt-in; }
 }
-@keyframes vt-out { to { opacity: 0; filter: blur(4px); } }
-@keyframes vt-in { from { opacity: 0; filter: blur(4px); } }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; } }
 
 /* numbered section headings inside posts */
 .post-body { counter-reset: section; }

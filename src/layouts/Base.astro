@@ -39,9 +39,9 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
     <meta property="og:image:alt" content="Deepak Nelapatla: “I build models that read clinical notes.” shown as 8 tinted tokens" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href="/rss.xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400&family=Funnel+Display:wght@500;600&display=swap" rel="stylesheet" />
+    <!-- Self-hosted fonts (latin): no third-party round trips; the two above-the-fold faces preload. -->
+    <link rel="preload" href="/fonts/geist.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/funnel-display-600.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Prerender a page after a short hover (Chromium). Rules only, no script runs. -->
     <script type="speculationrules" is:inline>
       {"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/rss.xml"}},{"not":{"href_matches":"/llms.txt"}},{"not":{"href_matches":"/try"}}]},"eagerness":"moderate"}]}
