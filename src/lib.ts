@@ -44,3 +44,18 @@ export function tokenCount(text = '') {
   // Non-breaking space so "1.2k tokens" never splits across lines.
   return n < 1000 ? `${n}\u00a0tokens` : `${(n / 1000).toFixed(1)}k\u00a0tokens`;
 }
+
+// Visible text of an .astro page's source (for search and the markdown versions).
+export function pageText(src: string) {
+  let s = src
+    .replace(/^---[\s\S]*?---/, '') // frontmatter
+    .replace(/<(script|style)[\s\S]*?<\/\1>/g, '');
+  // ponytail: drops Astro {expressions} wholesale, so computed text (counts, lists) isn't searchable
+  while (/\{[^{}]*\}/.test(s)) s = s.replace(/\{[^{}]*\}/g, '');
+  return s
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n[\s]*/g, '\n')
+    .trim();
+}
