@@ -167,7 +167,7 @@ h1, h2, .tokens, .post-title, .fig figcaption { text-wrap: balance; }
 }
 
 /* "no tokens, please": plain reading, no ChatML chrome or token styling */
-html.plain :is(.chatml, .legend, .statusbar, .hallucination, .ctxline, .tokens .count) { display: none; }
+html.plain :is(.chatml, .legend, .statusbar, .ctxline, .tokens .count) { display: none; }
 html.plain .dt.miss { text-decoration: none; }
 html.plain .dt[data-guess]::before { display: none; }
 html.plain :is(.tokens > span[class^="t"], .chat .dt, .chat-system .st) { background: none !important; box-shadow: none !important; }
@@ -371,31 +371,6 @@ main { view-transition-name: page; }
 .post-nav a:hover .dim { color: var(--muted); }
 .post-nav .right { margin-left: auto; text-align: right; }
 
-/* copy-email button: both labels share one grid cell, so swapping them never shifts layout */
-.email { display: inline-flex; align-items: baseline; gap: .5rem; }
-.copy {
-  display: inline-grid;
-  padding: 0 .4rem;
-  border: 1px solid var(--line);
-  border-radius: 99px;
-  background: none;
-  color: var(--faint);
-  font: .7rem/1.5 var(--mono);
-  cursor: pointer;
-  transition: color .15s ease, border-color .15s ease;
-}
-.copy:hover { color: var(--text); border-color: var(--hairline); }
-.copy-label { grid-area: 1 / 1; transition: opacity .15s ease; }
-.copy-label + .copy-label, .copy[data-copied] .copy-label:first-child { opacity: 0; }
-.copy[data-copied] .copy-label + .copy-label { opacity: 1; }
-.copy[data-copied] { color: var(--text); }
-@media (prefers-reduced-motion: no-preference) {
-  .copy-label { transition: opacity .15s ease, transform .2s var(--ease-out); }
-  .copy-label + .copy-label { transform: translateY(4px); }
-  .copy[data-copied] .copy-label:first-child { transform: translateY(-4px); }
-  .copy[data-copied] .copy-label + .copy-label { transform: none; }
-}
-
 @media (max-width: 520px) {
   .post-nav { flex-direction: column; }
   .post-nav .right { margin-left: 0; text-align: left; }
@@ -577,10 +552,8 @@ html:not(.plain):has(.ctxline) { scroll-padding-bottom: 3rem; }
 /* iOS zooms into inputs smaller than 16px */
 @media (pointer: coarse) { .cmdline input, .grep-input { font-size: 1rem; } }
 
-/* Phase 3: idle top-5 sampler, high-temperature line, ARGMAX particles */
+/* idle top-5 sampler */
 .dt[data-guess].resampling::before { opacity: 0; }
-.hallucination { margin: .6rem 0 0; font: .8rem var(--mono); color: #fbbf24; }
-.argmax-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 20; }
 
 /* boot sequence: first visit or reload, the site "trains" on my history, then goes live */
 .boot { display: none; }

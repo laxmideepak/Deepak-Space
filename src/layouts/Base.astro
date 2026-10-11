@@ -70,7 +70,7 @@ const BOOT: [string, string][] = [
     <link rel="preload" href="/fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Prerender a page after a short hover (Chromium). Rules only, no script runs. -->
     <script type="speculationrules" is:inline>
-      {"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/rss.xml"}},{"not":{"href_matches":"/llms.txt"}},{"not":{"href_matches":"/try"}}]},"eagerness":"moderate"}]}
+      {"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/rss.xml"}},{"not":{"href_matches":"/try"}}]},"eagerness":"moderate"}]}
     </script>
   </head>
   <body>
@@ -121,14 +121,7 @@ const BOOT: [string, string][] = [
     </main>
     <footer>
       <span>Deepak Nelapatla</span>
-      <span class="email">
-        <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
-        <button type="button" class="copy" data-copy={EMAIL} aria-label="copy email" hidden>
-          <span class="copy-label">copy</span>
-          <span class="copy-label" aria-hidden="true">copied</span>
-        </button>
-        <span class="sr-only" role="status" aria-live="polite"></span>
-      </span>
+      <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
       <a href="/rss.xml">rss</a>
       <span class="footer-tools">
         <button type="button" class="plain-toggle" data-cmd-open hidden>: cmd</button>
@@ -205,7 +198,7 @@ const BOOT: [string, string][] = [
         switch (name) {
           case '': return closeCmd();
           case 'help': case 'h':
-            return say('open <words> · notes · grep <regex> · try · about · card · home · temperature <t> · plain (also turns off the ":" key) · q');
+            return say('open <words> · grep <regex> · temperature <t> · plain (also turns off the ":" key) · q');
           case 'open': case 'o': {
             if (!arg) return say("TypeError: open() missing 1 required positional argument: 'file'");
             const norm = (t: string) => t.toLowerCase().replace(/['’‘]/g, '').replace(/[-\s]+/g, ' ');
@@ -213,12 +206,7 @@ const BOOT: [string, string][] = [
             const hit = cmdNotes.find((n) => norm(n.title).includes(q) || norm(n.id).includes(q));
             return hit ? go(`/posts/${hit.id}`) : say(`FileNotFoundError: [Errno 2] No such note: '${arg}'`);
           }
-          case 'notes': case 'n': return go('/notes');
           case 'grep': case 'g': return go(`/notes${arg ? `?q=${encodeURIComponent(arg)}` : ''}`);
-          case 'try': return go('/try');
-          case 'about': return go('/about');
-          case 'card': return go('/about#model-card');
-          case 'home': return go('/');
           case 'temperature': case 't': {
             const t = Number(arg);
             if (!arg || Number.isNaN(t)) return say(`ValueError: could not convert string to float: '${arg}'`);
@@ -229,7 +217,7 @@ const BOOT: [string, string][] = [
             setStill(false);
             try { localStorage.setItem('temp', String(t)); } catch {}
             dispatchEvent(new CustomEvent('temperature', { detail: t }));
-            return say(t >= 1.3 ? `temperature=${t} · HALLUCINATING` : `temperature=${t} · motion on`);
+            return say(`temperature=${t} · motion on`);
           }
           case 'plain': plain?.click(); return say(html.classList.contains('plain') ? 'plain reading on' : 'plain reading off');
           case 'q': case 'quit': case 'exit': say('<|endoftext|>'); setTimeout(closeCmd, 700); return;
@@ -253,27 +241,6 @@ const BOOT: [string, string][] = [
           openCmd();
         }
       });
-
-      // Copy the email address. The button stays hidden without JS.
-      for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
-        const status = button.nextElementSibling as HTMLElement;
-        let timer: ReturnType<typeof setTimeout>;
-        button.hidden = false;
-        button.addEventListener('click', async () => {
-          clearTimeout(timer);
-          try {
-            await navigator.clipboard.writeText(button.dataset.copy!);
-            button.dataset.copied = '';
-            status.textContent = 'Email copied';
-          } catch {
-            status.textContent = 'Copy failed';
-          }
-          timer = setTimeout(() => {
-            delete button.dataset.copied;
-            status.textContent = '';
-          }, 1500);
-        });
-      }
     </script>
   </body>
 </html>

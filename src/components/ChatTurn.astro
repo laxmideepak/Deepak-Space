@@ -66,7 +66,6 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
   </p>
   <p class="chatml chat-end"><span aria-hidden="true">&lt;|im_end|&gt;</span><a class="chip argmax" href="/notes" data-argmax>notes ↩</a></p>
   <p class="legend" id="chat-legend">struck through = what a small model guessed I’d say · where it’s wrong, that’s me · hover any word for its odds · <a href="/try">try it on your own words</a></p>
-  <p class="hallucination" data-hallucination aria-live="polite" hidden></p>
   <p class="statusbar">
     <span class="sr-only">A {modelName} model, reading my system prompt, predicted {hits} of these {tokens.length} tokens.</span>
     <span class="tagline" aria-hidden="true">deepak-24 · one token at a time</span>
@@ -90,7 +89,7 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
       const pop = root.querySelector('.pop');
       const total = toks.length;
       const kv = html.dataset.kv === 'hit'; // set in <head> before the prompt paints
-      const still = () => html.classList.contains('plain') || html.classList.contains('still') || new URLSearchParams(location.search).has('still')
+      const still = () => html.classList.contains('plain') || html.classList.contains('still')
         || matchMedia('(prefers-reduced-motion: reduce)').matches;
       let timer, i = 0;
       root.querySelector('[data-kv-cell]').textContent = kv ? 'hit · prefill skipped' : 'cold';
@@ -232,20 +231,15 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         const spans = [...root.querySelectorAll('.scored [data-i]')];
         const scores = spans.map((el) => Math.log(Math.max(data[el.closest('.scored').dataset.set][+el.dataset.i].p, 1e-9)));
         const max = Math.max(...scores), t0 = performance.now(), D = 650;
-        // At T >= 1 the destination itself is sampled, not argmaxed.
-        const T0 = readTemp();
-        const dests = ['/notes', '/about', '/try'];
-        const href = T0 >= 1 ? dests[Math.floor(Math.random() * dests.length)] : chip.href;
-        particles(chip);
         let gone = false;
-        const go = () => { if (!gone && annealing) { gone = true; location.href = href; } };
+        const go = () => { if (!gone && annealing) { gone = true; location.href = chip.href; } };
         setTimeout(go, D + 250); // hidden tabs pause animation frames; still navigate
         const frame = (now) => {
           if (!annealing) return; // restored from the back/forward cache meanwhile
           const k = Math.min((now - t0) / D, 1);
           const T = 8 * (1 - k) ** 2 + 0.01;
           spans.forEach((el, j) => { el.style.opacity = Math.exp((scores[j] - max) / T).toFixed(3); });
-          state.textContent = T0 >= 1 ? `SAMPLED → ${href} · T ${T0}` : `ARGMAX · T ${T.toFixed(2)}`;
+          state.textContent = `ARGMAX · T ${T.toFixed(2)}`;
           if (k < 1) requestAnimationFrame(frame);
           else go();
         };
@@ -258,32 +252,13 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
         annealing = false;
         root.classList.remove('annealing');
         root.querySelectorAll('.scored [data-i]').forEach((el) => { el.style.opacity = ''; });
-        document.querySelectorAll('.argmax-canvas').forEach((c) => c.remove());
         state.textContent = `DONE ${total} tok`;
       });
 
       // ---------- Phase 3 ----------
       const readTemp = () => { try { const t = Number(localStorage.getItem('temp')); return t > 0 ? t : 0.7; } catch { return 0.7; } };
       const tempCell = root.querySelector('[data-temp]');
-      const halluc = root.querySelector('[data-hallucination]');
-      // Curated samples at high temperature: only my real words, scrambled.
-      const HALLUCINATIONS = [
-        'I build cricket that reads volleyball notes.',
-        'Off the clock: predicting late-life badminton.',
-        'I read models that build clinical games.',
-        'Always up for a longitudinal game.',
-        'I build notes that read clinical models.',
-      ];
-      const applyTemp = () => {
-        const T = readTemp();
-        tempCell.textContent = T >= 1.3 ? `${T} HALLUCINATING` : String(T);
-        if (T >= 1.3 && !html.classList.contains('plain')) {
-          halluc.textContent = `sampled at T ${T}: “${HALLUCINATIONS[Math.floor(Math.random() * HALLUCINATIONS.length)]}”`;
-          halluc.hidden = false;
-        } else {
-          halluc.hidden = true;
-        }
-      };
+      const applyTemp = () => { tempCell.textContent = String(readTemp()); };
       applyTemp();
       addEventListener('temperature', applyTemp);
 
@@ -325,50 +300,6 @@ const data = { system: pack(system_tokens), reply: pack(tokens) };
       };
       ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach((e) => addEventListener(e, armIdle, { passive: true }));
       document.addEventListener('visibilitychange', () => (document.hidden ? stopSampling() : armIdle()));
-
-      // ARGMAX particles: the faded tokens' characters stream into the chip. Canvas 2D,
-      // capped (1,200 particles, 400 on touch), created on demand, removed afterwards.
-      function particles(target) {
-        const canvas = document.createElement('canvas');
-        canvas.className = 'argmax-canvas';
-        canvas.setAttribute('aria-hidden', 'true');
-        const dpr = Math.min(devicePixelRatio || 1, 2);
-        canvas.width = innerWidth * dpr;
-        canvas.height = innerHeight * dpr;
-        document.body.append(canvas);
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
-        ctx.font = '11px "Geist Mono", ui-monospace, monospace';
-        const end = target.getBoundingClientRect();
-        const tx = end.left + end.width / 2, ty = end.top + end.height / 2;
-        const cap = matchMedia('(pointer: coarse)').matches ? 400 : 1200;
-        const spans = [...root.querySelectorAll('.scored [data-i]')].filter((el) => el.textContent.trim());
-        const per = Math.max(1, Math.floor(cap / Math.max(spans.length, 1)));
-        const ps = [];
-        for (const el of spans) {
-          const r = el.getBoundingClientRect(), chars = el.textContent.trim();
-          for (let k = 0; k < per && ps.length < cap; k++) {
-            ps.push({ x: r.left + Math.random() * r.width, y: r.top + Math.random() * r.height, c: chars[k % chars.length], d: Math.random() * 180, blue: Math.random() < 0.3 });
-          }
-        }
-        const t0 = performance.now(), D = 620;
-        const draw = (now) => {
-          if (!canvas.isConnected) return;
-          ctx.clearRect(0, 0, innerWidth, innerHeight);
-          let alive = false;
-          for (const p of ps) {
-            const k = Math.min(Math.max((now - t0 - p.d) / D, 0), 1);
-            if (k < 1) alive = true;
-            const e = k * k * (3 - 2 * k); // smoothstep
-            ctx.globalAlpha = Math.round((1 - k) * 8) / 8; // 8 alpha buckets
-            ctx.fillStyle = p.blue ? '#60a5fa' : '#ededed';
-            ctx.fillText(p.c, p.x + (tx - p.x) * e, p.y + (ty - p.y) * e);
-          }
-          if (alive) requestAnimationFrame(draw);
-          else canvas.remove();
-        };
-        requestAnimationFrame(draw);
-      }
 
       if (still() || kv) finish();
       else if (html.classList.contains('booting')) addEventListener('booted', start, { once: true }); // decode after the boot
