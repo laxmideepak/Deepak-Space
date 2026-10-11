@@ -615,3 +615,11 @@ html:not(.plain):has(.ctxline) { scroll-padding-bottom: 3rem; }
 
 /* iOS zooms into inputs smaller than 16px */
 @media (pointer: coarse) { .cmdline input, .grep-input { font-size: 1rem; } }
+
+/* Phase 3: idle top-5 sampler, high-temperature line, ARGMAX particles */
+.dt[data-guess]::before { transition: opacity .18s ease; }
+.dt[data-guess].resampling::before { opacity: 0; }
+.hallucination { margin: .6rem 0 0; font: .8rem var(--mono); color: #fbbf24; }
+.hallucination[hidden] { display: none; }
+.argmax-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 20; }
+html.plain .hallucination { display: none; }

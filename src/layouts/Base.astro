@@ -173,7 +173,9 @@ const notes = (await getPosts()).map((p) => ({ id: p.id, title: p.data.title }))
               return say(`UserWarning: \`temperature\` (=${t}) has to be a strictly positive float, otherwise your next token scores will be invalid. Motion off.`);
             }
             setStill(false);
-            return say(`temperature=${t} · motion on`);
+            try { localStorage.setItem('temp', String(t)); } catch {}
+            dispatchEvent(new CustomEvent('temperature', { detail: t }));
+            return say(t >= 1.3 ? `temperature=${t} · HALLUCINATING` : `temperature=${t} · motion on`);
           }
           case 'plain': plain?.click(); return say(html.classList.contains('plain') ? 'plain reading on' : 'plain reading off');
           case 'q': case 'quit': case 'exit': say('<|endoftext|>'); setTimeout(closeCmd, 700); return;
