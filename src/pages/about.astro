@@ -9,8 +9,6 @@ import o200k from 'js-tiktoken/ranks/o200k_base';
 const encoders = [new Tiktoken(gpt2), new Tiktoken(cl100k), new Tiktoken(o200k)];
 const counts = (s: string) => encoders.map((e) => e.encode(s).length);
 const english = counts('Deepak Nelapatla');
-const telugu = counts('దీపక్ నేలపాటి');
-const cheaper = Math.floor(telugu[0] / telugu[2]);
 ---
 <Base title="about">
   <article class="prose">
@@ -28,7 +26,7 @@ const cheaper = Math.floor(telugu[0] / telugu[2]);
       <div><dt>Intended use</dt><dd>reading clinical notes; writing these ones</dd></div>
       <div><dt>Known issues</dt><dd>always up for a game</dd></div>
     </dl>
-    <p class="name-tokens">My name, tokenized by GPT-2 → GPT-4 → GPT-4o: <span lang="en">Deepak Nelapatla</span> is {english.join(' → ')} tokens. In Telugu, <span lang="te">దీపక్ నేలపాటి</span> is {telugu.join(' → ')}. It got {cheaper}× cheaper to say my name.</p>
+    <p class="name-tokens">My name, tokenized by GPT-2 → GPT-4 → GPT-4o: <span lang="en">Deepak Nelapatla</span> is {english.join(' → ')} tokens.</p>
 
     <h2>Why “tokenizer”</h2>
     <p>Before a language model can read anything, a tokenizer breaks the text into small pieces. That’s what this site is for me: breaking work, life and play into pieces small enough to think about. On the homepage, a small model reads my system prompt and tries to predict what I’ll say, one token at a time. Where it guesses wrong, that’s me.</p>
