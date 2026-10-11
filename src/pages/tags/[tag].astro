@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PostList from '../../components/PostList.astro';
+import Tokens from '../../components/Tokens.astro';
 import { getPosts, TAGS } from '../../lib';
 
 export function getStaticPaths() {
@@ -20,5 +21,10 @@ const posts = (await getPosts()).filter((p) => p.data.tags.includes(tag));
     <h1>{tag[0].toUpperCase() + tag.slice(1)}</h1>
     <p class="intro">{blurbs[tag]}</p>
   </section>
-  {posts.length ? <PostList posts={posts} /> : <p class="empty">No notes here yet.</p>}
+  {posts.length ? <PostList posts={posts} /> : (
+    <section class="empty">
+      <Tokens text="This dimension of Deepak is still being built." />
+      <p class="loss-nan">0 tokens trained · weights initialized · first checkpoint soon</p>
+    </section>
+  )}
 </Base>

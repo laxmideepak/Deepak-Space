@@ -5,7 +5,7 @@ import inference from '../data/inference.json';
 // Same weights as the homepage export, converted to ONNX for the browser.
 const MODEL = `onnx-community/${inference.model.split('/').pop()}`;
 const modelName = inference.model.split('/').pop()!.replace(/-Instruct$/, '');
-const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla', 'దీపక్ నేలపాటి', 'Always up for a game.'];
+const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla', 'Always up for a game.'];
 ---
 <Base title="try" description="Tokenize your own words, then see how much of you a small language model can predict. Runs entirely in your browser.">
   <section class="hero">

@@ -194,7 +194,7 @@ html.plain :is(.tokens > span[class^="t"], .chat .dt, .chat-system .st) { backgr
 }
 .post-meta { display: flex; gap: 1rem; flex-shrink: 0; font: .75rem var(--mono); color: var(--faint); }
 .post-meta span:last-child { min-width: 5.5rem; text-align: right; }
-.empty { color: var(--muted); }
+.empty { margin-top: 1rem; }
 
 /* post page */
 .post-header { margin-bottom: 2.5rem; }
