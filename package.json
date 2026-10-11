@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
+    "@huggingface/transformers": "^4.3.0",
     "astro": "^5.18.2",
     "js-tiktoken": "^1.0.21"
   }

@@ -437,3 +437,43 @@ main { view-transition-name: page; }
   transition: color .15s ease, border-color .15s ease;
 }
 .plain-toggle:hover, .plain-toggle[aria-pressed="true"] { color: var(--text); border-color: var(--hairline); }
+
+/* /try: tokenizer playground + "can a model predict you?" */
+.try { margin-bottom: 4rem; }
+.try h2 { margin-top: 0; }
+.try-hint { margin: 0 0 1rem; color: var(--muted); font-size: .95rem; text-wrap: pretty; }
+.try-label { display: block; margin: 1rem 0 .35rem; font: .75rem var(--mono); color: var(--faint); }
+.try-label span { color: var(--hairline); }
+.try-input {
+  display: block; width: 100%; padding: .65rem .8rem;
+  background: var(--raised); color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px;
+  font: 1rem/1.5 var(--sans); resize: vertical;
+}
+.try-input:focus-visible { outline-offset: 1px; }
+.try-input::placeholder { color: var(--hairline); }
+.try-chips, .try-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0 0; }
+.chip {
+  padding: .2rem .7rem; border: 1px solid var(--line); border-radius: 99px;
+  background: none; color: var(--muted); font: .75rem var(--mono); cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.chip:hover { color: var(--text); border-color: var(--hairline); }
+.try-tokens { width: auto; margin: 1.25rem 0 .5rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.try-counts, .try-status, .try-note { margin: .5rem 0 0; font: .75rem/1.6 var(--mono); color: var(--faint); }
+.try-check { display: inline-flex; align-items: center; gap: .4rem; margin-top: .75rem; font: .75rem var(--mono); color: var(--faint); accent-color: #60a5fa; }
+.try-ids { margin: .5rem 0 0; font: .75rem/1.7 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.try-btn {
+  padding: .45rem 1rem; border: 1px solid #60a5fa; border-radius: 99px;
+  background: rgb(96 165 250 / .15); color: var(--text); font: .8rem var(--mono); cursor: pointer;
+  transition: background-color .15s ease;
+}
+.try-btn:hover { background: rgb(96 165 250 / .25); }
+.try-btn:disabled { opacity: .5; cursor: progress; }
+.try-btn[hidden], .try-progress[hidden], .try-ids[hidden] { display: none; }
+.try-progress { width: 100%; height: .35rem; margin-top: .75rem; accent-color: #60a5fa; }
+.try-out { width: auto; margin: 1.5rem 0 0; min-height: 0; }
+.try-out:empty { display: none; }
+.try-verdict { margin: .75rem 0 0; color: var(--text); text-wrap: pretty; }
+.try-verdict:empty { display: none; }
+.legend a { color: var(--muted); }

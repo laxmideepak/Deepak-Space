@@ -1,0 +1,208 @@
+---
+import Base from '../layouts/Base.astro';
+import inference from '../data/inference.json';
+
+const MODEL = inference.model;
+const modelName = MODEL.split('/').pop()!.replace(/-Instruct$/, '');
+const examples = ['I build models that read clinical notes.', 'Deepak Nelapatla', 'దీపక్ నేలపాటి', 'Always up for a game.'];
+---
+<Base title="try" description="Tokenize your own words, then see how much of you a small language model can predict. Runs entirely in your browser.">
+  <section class="hero">
+    <h1>Try it</h1>
+    <p class="intro">Two things to do with your own words. Both run in your browser; nothing you type is sent anywhere.</p>
+  </section>
+
+  <section class="try" data-tokenize>
+    <h2>Tokenize</h2>
+    <p class="try-hint">How a language model sees text before it reads it. Counts update as you type.</p>
+    <label class="sr-only" for="tok-input">Text to tokenize</label>
+    <textarea id="tok-input" class="try-input" rows="2" spellcheck="false">I build models that read clinical notes.</textarea>
+    <p class="try-chips">
+      {examples.map((e) => <button type="button" class="chip" data-example={e}>{e}</button>)}
+    </p>
+    <p class="tokens is-lit try-tokens" aria-hidden="true" data-tok-out></p>
+    <p class="try-counts" data-tok-counts aria-live="polite">loading tokenizers…</p>
+    <label class="try-check"><input type="checkbox" data-tok-ids /> show token ids</label>
+    <p class="try-ids" data-tok-ids-out hidden></p>
+  </section>
+
+  <section class="try" data-predict data-model={MODEL} data-home-alpha={inference.alpha} data-mine-system={inference.system} data-mine-line={inference.lines[0]}>
+    <h2>Can a model predict you?</h2>
+    <p class="try-hint">
+      The homepage shows {modelName} reading my system prompt and trying to guess my words; it predicted
+      {Math.round(inference.alpha * 100)}% of them. Give it yours. Leave the system prompt empty and it uses
+      its default (“You are Qwen…”).
+    </p>
+    <label class="try-label" for="sys-input">system prompt <span>(optional)</span></label>
+    <textarea id="sys-input" class="try-input" rows="2" spellcheck="false" placeholder="You are …, a … who …"></textarea>
+    <label class="try-label" for="say-input">something you’d say</label>
+    <input id="say-input" class="try-input" type="text" maxlength="280" spellcheck="false" placeholder="One sentence, the way you’d actually say it." />
+    <p class="try-actions">
+      <button type="button" class="try-btn" data-load>Load the model · ~480 MB, once</button>
+      <button type="button" class="try-btn" data-score hidden>Score it</button>
+      <button type="button" class="chip" data-mine>use mine</button>
+    </p>
+    <p class="try-status" data-status aria-live="polite">The model downloads to your browser cache the first time (about 480 MB with WebGPU, 512 MB without). Best on a laptop.</p>
+    <progress class="try-progress" data-progress max="100" value="0" hidden></progress>
+    <p class="reply try-out" data-out aria-hidden="true"></p>
+    <p class="try-verdict" data-verdict aria-live="polite"></p>
+    <p class="try-note">Runs a quantized copy of the same model in your browser, so the odds can differ slightly from the homepage’s full-precision run.</p>
+  </section>
+
+  <script>
+    type Encoder = { encode: (s: string) => number[]; decode: (ids: number[]) => string };
+
+    // ---------- Tokenize: js-tiktoken, the same library that counts tokens on every post ----------
+    const tokBox = document.querySelector<HTMLElement>('[data-tokenize]')!;
+    const input = tokBox.querySelector<HTMLTextAreaElement>('#tok-input')!;
+    const out = tokBox.querySelector<HTMLElement>('[data-tok-out]')!;
+    const counts = tokBox.querySelector<HTMLElement>('[data-tok-counts]')!;
+    const idsToggle = tokBox.querySelector<HTMLInputElement>('[data-tok-ids]')!;
+    const idsOut = tokBox.querySelector<HTMLElement>('[data-tok-ids-out]')!;
+    const encoders: Partial<Record<'gpt2' | 'cl100k_base' | 'o200k_base', Encoder>> = {};
+
+    async function loadEncoders() {
+      const { Tiktoken } = await import('js-tiktoken/lite');
+      const [gpt2, cl100k, o200k] = await Promise.all([
+        import('js-tiktoken/ranks/gpt2'),
+        import('js-tiktoken/ranks/cl100k_base'),
+        import('js-tiktoken/ranks/o200k_base'),
+      ]);
+      encoders.gpt2 = new Tiktoken(gpt2.default);
+      encoders.cl100k_base = new Tiktoken(cl100k.default);
+      encoders.o200k_base = new Tiktoken(o200k.default);
+    }
+
+    function renderTokens() {
+      const o200k = encoders.o200k_base;
+      if (!o200k) return;
+      const text = input.value;
+      const ids = o200k.encode(text);
+      out.replaceChildren(...ids.map((id, i) => {
+        const span = document.createElement('span');
+        span.className = `t${i % 4}`;
+        span.textContent = o200k.decode([id]).replace(/\n/g, '↵\n');
+        return span;
+      }));
+      const n = (e?: Encoder) => (e ? e.encode(text).length : '…');
+      counts.textContent = `${ids.length} tokens in GPT-4o (o200k) · ${n(encoders.cl100k_base)} in GPT-4 (cl100k) · ${n(encoders.gpt2)} in GPT-2`;
+      idsOut.textContent = ids.join(' ');
+    }
+
+    input.addEventListener('input', renderTokens);
+    idsToggle.addEventListener('change', () => { idsOut.hidden = !idsToggle.checked; });
+    for (const chip of tokBox.querySelectorAll<HTMLButtonElement>('[data-example]')) {
+      chip.addEventListener('click', () => { input.value = chip.dataset.example!; renderTokens(); input.focus(); });
+    }
+    loadEncoders().then(renderTokens).catch(() => { counts.textContent = 'Couldn’t load the tokenizers. Try reloading.'; });
+
+    // ---------- Predict: the homepage's model, teacher-forced on the visitor's sentence ----------
+    const box = document.querySelector<HTMLElement>('[data-predict]')!;
+    const MODEL = box.dataset.model!;
+    const homeAlpha = Number(box.dataset.homeAlpha);
+    const sysInput = box.querySelector<HTMLTextAreaElement>('#sys-input')!;
+    const sayInput = box.querySelector<HTMLInputElement>('#say-input')!;
+    const loadBtn = box.querySelector<HTMLButtonElement>('[data-load]')!;
+    const scoreBtn = box.querySelector<HTMLButtonElement>('[data-score]')!;
+    const status = box.querySelector<HTMLElement>('[data-status]')!;
+    const progress = box.querySelector<HTMLProgressElement>('[data-progress]')!;
+    const result = box.querySelector<HTMLElement>('[data-out]')!;
+    const verdict = box.querySelector<HTMLElement>('[data-verdict]')!;
+
+    box.querySelector<HTMLButtonElement>('[data-mine]')!.addEventListener('click', () => {
+      sysInput.value = box.dataset.mineSystem!;
+      sayInput.value = box.dataset.mineLine!;
+    });
+
+    let tokenizer: any, model: any, lib: any;
+
+    loadBtn.addEventListener('click', async () => {
+      loadBtn.disabled = true;
+      progress.hidden = false;
+      status.textContent = 'Loading the runtime…';
+      try {
+        lib = await import('@huggingface/transformers');
+        const webgpu = 'gpu' in navigator && !!(await (navigator as any).gpu?.requestAdapter());
+        const opts = {
+          device: webgpu ? 'webgpu' : 'wasm',
+          dtype: webgpu ? 'q4f16' : 'q8',
+          progress_callback: (p: any) => {
+            if (p.status === 'progress_total') {
+              progress.value = p.progress;
+              status.textContent = `Downloading ${webgpu ? 'with WebGPU' : 'for CPU'}: ${Math.round(p.loaded / 1e6)} / ${Math.round(p.total / 1e6)} MB`;
+            }
+          },
+        };
+        tokenizer = await lib.AutoTokenizer.from_pretrained(MODEL);
+        model = await lib.AutoModelForCausalLM.from_pretrained(MODEL, opts);
+        progress.hidden = true;
+        loadBtn.hidden = true;
+        scoreBtn.hidden = false;
+        status.textContent = `Model ready (${opts.device}, ${opts.dtype}). Type a sentence and score it.`;
+        sayInput.focus();
+      } catch (err) {
+        loadBtn.disabled = false;
+        progress.hidden = true;
+        status.textContent = `Couldn’t load the model: ${(err as Error).message}. A recent desktop Chrome, Edge or Safari works best.`;
+      }
+    });
+
+    // Same scoring as scripts/export_inference.py: one forward pass, then for each
+    // token of the sentence, the model's distribution given everything before it.
+    async function score(system: string, sentence: string) {
+      const messages = system.trim() ? [{ role: 'system', content: system.trim() }] : [];
+      const prefix: string = tokenizer.apply_chat_template(messages, { tokenize: false, add_generation_prompt: true });
+      const prefixIds: number[] = tokenizer.encode(prefix, { add_special_tokens: false });
+      const ids: number[] = tokenizer.encode(prefix + sentence, { add_special_tokens: false });
+      if (prefixIds.some((t, i) => ids[i] !== t)) throw new Error('prompt and sentence merged into one token; add a space');
+      const shape = [1, ids.length];
+      const input_ids = new lib.Tensor('int64', BigInt64Array.from(ids.map(BigInt)), shape);
+      const attention_mask = new lib.Tensor('int64', new BigInt64Array(ids.length).fill(1n), shape);
+      let { logits } = await model({ input_ids, attention_mask });
+      if (logits.type !== 'float32') logits = logits.to('float32');
+      const vocab = logits.dims[2];
+      const all = logits.data as Float32Array;
+      const tokens = [];
+      for (let pos = prefixIds.length; pos < ids.length; pos++) {
+        const row = all.subarray((pos - 1) * vocab, pos * vocab);
+        let max = -Infinity;
+        for (let v = 0; v < vocab; v++) if (row[v] > max) max = row[v];
+        let sum = 0, best = 0;
+        for (let v = 0; v < vocab; v++) { sum += Math.exp(row[v] - max); if (row[v] > row[best]) best = v; }
+        const actual = ids[pos];
+        const p = Math.exp(row[actual] - max) / sum;
+        tokens.push({ text: tokenizer.decode([actual]), guess: tokenizer.decode([best]), hit: best === actual, p, bits: -Math.log2(Math.max(p, 1e-12)) });
+      }
+      return tokens;
+    }
+
+    scoreBtn.addEventListener('click', async () => {
+      const sentence = sayInput.value.trim();
+      if (!sentence) { status.textContent = 'Write a sentence first.'; sayInput.focus(); return; }
+      scoreBtn.disabled = true;
+      status.textContent = 'Reading…';
+      try {
+        const tokens = await score(sysInput.value, sentence);
+        result.replaceChildren(...tokens.map((t, i) => {
+          const span = document.createElement('span');
+          span.className = `dt on t${i % 4}${t.hit ? '' : ' miss'}`;
+          if (!t.hit) span.dataset.guess = t.guess.replace(/\n/g, '↵').trim() || '·';
+          span.title = `p ${t.p < 0.001 ? '<0.001' : t.p.toFixed(3)} · ${t.bits.toFixed(1)} bits`;
+          span.textContent = t.text;
+          return span;
+        }));
+        const hits = tokens.filter((t) => t.hit).length;
+        const alpha = hits / tokens.length;
+        const surprise = tokens.reduce((a, t) => (t.bits > a.bits ? t : a), tokens[0]);
+        const compare = alpha < homeAlpha ? 'You’re harder to predict than me.' : alpha > homeAlpha ? 'You’re easier to predict than me.' : 'Exactly as predictable as me.';
+        verdict.textContent = `The model predicted ${hits} of your ${tokens.length} tokens (α ${alpha.toFixed(2)}); it predicted ${Math.round(homeAlpha * 100)}% of mine. ${compare} Most surprising: “${surprise.text.trim()}” at ${surprise.bits.toFixed(1)} bits.`;
+        status.textContent = 'Struck-through words above yours are what the model expected instead.';
+      } catch (err) {
+        status.textContent = `Couldn’t score that: ${(err as Error).message}`;
+      } finally {
+        scoreBtn.disabled = false;
+      }
+    });
+    sayInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !scoreBtn.hidden) scoreBtn.click(); });
+  </script>
+</Base>

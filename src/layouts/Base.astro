@@ -44,7 +44,7 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400&family=Funnel+Display:wght@500;600&display=swap" rel="stylesheet" />
     <!-- Prerender a page after a short hover (Chromium). Rules only, no script runs. -->
     <script type="speculationrules" is:inline>
-      {"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/rss.xml"}},{"not":{"href_matches":"/llms.txt"}}]},"eagerness":"moderate"}]}
+      {"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/rss.xml"}},{"not":{"href_matches":"/llms.txt"}},{"not":{"href_matches":"/try"}}]},"eagerness":"moderate"}]}
     </script>
   </head>
   <body>
@@ -53,6 +53,7 @@ const canonical = new URL(path.replace(/(.)\/$/, '$1'), Astro.site);
       <a href="/" class="site-name">{SITE_NAME}</a>
       <nav>
         {TAGS.map((t) => <a href={`/tags/${t}`} aria-current={path.startsWith(`/tags/${t}`) ? 'page' : undefined}>{t}</a>)}
+        <a href="/try" aria-current={path.startsWith('/try') ? 'page' : undefined}>try</a>
         <a href="/about" aria-current={path.startsWith('/about') ? 'page' : undefined}>about</a>
       </nav>
     </header>
