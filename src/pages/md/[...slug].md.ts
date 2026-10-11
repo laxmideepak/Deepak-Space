@@ -2,7 +2,7 @@ import type { APIContext } from 'astro';
 import inference from '../../data/inference.json';
 import { getPosts, pageText, TAGS, type Post } from '../../lib';
 
-// Markdown versions of every page. vercel.json serves them in place of the HTML when a
+// Markdown versions of every page. middleware.ts serves them in place of the HTML when a
 // request sends `Accept: text/markdown` (agents); browsers keep getting HTML.
 const sources = import.meta.glob<string>('../{about,try,notes}.astro', { query: '?raw', import: 'default', eager: true });
 

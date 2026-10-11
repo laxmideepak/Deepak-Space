@@ -37,29 +37,5 @@
         }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "header",
-          "key": "accept",
-          "value": "(.*)text/markdown(.*)"
-        }
-      ],
-      "destination": "/md/index.md"
-    },
-    {
-      "source": "/:path((?!md/)[^.]+)",
-      "has": [
-        {
-          "type": "header",
-          "key": "accept",
-          "value": "(.*)text/markdown(.*)"
-        }
-      ],
-      "destination": "/md/:path.md"
-    }
   ]
 }
