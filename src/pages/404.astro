@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+import { tokenize, TAGS } from '../lib';
+
+const line = 'This page isn’t in my vocabulary.';
+const tokens = tokenize(line);
+---
+<Base title="Not found">
+  <section class="hero">
+    <h1>404</h1>
+    <p class="tokens is-lit" style={`--n: ${tokens.length}`}>
+      <span class="sr-only">{line}</span>
+      {tokens.map((t, i) => <span class={`t${i % 4}`} style={`--i: ${i}`} aria-hidden="true">{t}</span>)}
+      {' '}<span class="count" aria-hidden="true">{tokens.length} tokens</span>
+    </p>
+    <p class="intro">Byte-level BPE never hits an unknown token. This URL did.</p>
+  </section>
+  <p class="pills">
+    {TAGS.map((t) => <a href={`/tags/${t}`}>{t}</a>)}
+    <a href="/">home</a>
+  </p>
+</Base>

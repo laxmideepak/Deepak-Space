@@ -10,9 +10,10 @@ const posts = await getPosts();
 <Base>
   <section class="hero">
     <h1>Deepak Nelapatla</h1>
-    <p class="tokens" tabindex="0" aria-label={intro}>
-      {tokens.map((t, i) => <span class={`t${i % 4}`} aria-hidden="true">{t}</span>)}
-      <span class="count" aria-hidden="true">{tokens.length} tokens</span>
+    <p class="tokens" tabindex="0" style={`--n: ${tokens.length}`}>
+      <span class="sr-only">{intro}</span>
+      {tokens.map((t, i) => <span class={`t${i % 4}`} style={`--i: ${i}`} aria-hidden="true">{t}</span>)}
+      {' '}<span class="count" aria-hidden="true">{tokens.length} tokens</span>
     </p>
     <p class="intro">This is where I write down what I learn at work, what I think about, and the games I play.</p>
   </section>

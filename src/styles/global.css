@@ -22,6 +22,7 @@ body {
   color: var(--text);
   font: 400 1rem/1.65 var(--sans);
 }
+::selection { background-color: rgb(96 165 250 / .32); color: var(--text); }
 a { color: inherit; text-decoration-color: var(--faint); text-underline-offset: 3px; }
 a:hover { text-decoration-color: var(--text); }
 :focus-visible { outline: 1px solid var(--muted); outline-offset: 3px; border-radius: 2px; }
@@ -57,13 +58,10 @@ h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
 .intro { font-size: 1.125rem; color: var(--muted); max-width: 34rem; margin: 0; }
 .tokens { font-size: 1.25rem; margin: 0 0 .4rem; cursor: default; width: fit-content; }
 .tokens > span[class^="t"] { border-radius: 3px; transition: background-color .25s ease, box-shadow .25s ease; }
-.tokens:hover .t0, .tokens:focus .t0 { background: var(--t0); }
-.tokens:hover .t1, .tokens:focus .t1 { background: var(--t1); }
-.tokens:hover .t2, .tokens:focus .t2 { background: var(--t2); }
-.tokens:hover .t3, .tokens:focus .t3 { background: var(--t3); }
-.tokens:hover > span[class^="t"], .tokens:focus > span[class^="t"] { box-shadow: 1px 0 0 var(--bg); }
+.t0 { --tint: var(--t0); } .t1 { --tint: var(--t1); } .t2 { --tint: var(--t2); } .t3 { --tint: var(--t3); }
+.tokens:is(:hover, :focus, .is-lit) > span[class^="t"] { background: var(--tint); box-shadow: 1px 0 0 var(--bg); }
 .count {
-  margin-left: .6rem;
+  user-select: none;
   font: .75rem var(--mono);
   color: var(--faint);
   white-space: nowrap;
@@ -71,7 +69,24 @@ h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
   transition: opacity .25s ease;
   pointer-events: none;
 }
-.tokens:hover .count, .tokens:focus .count { opacity: 1; }
+.tokens:is(:hover, :focus, .is-lit) .count { opacity: 1; }
+/* touch screens can't hover, so show the count there */
+@media (hover: none) { .tokens .count { opacity: 1; } }
+/* tints arrive one after another, like a tokenizer emitting output; leaving clears at once */
+@media (prefers-reduced-motion: no-preference) {
+  .tokens:is(:hover, :focus) > span[class^="t"] { transition-delay: calc(var(--i) * 35ms); }
+  .tokens:is(:hover, :focus) .count { transition-delay: calc(var(--n) * 35ms); }
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.tokens .sr-only { user-select: none; }
+
+/* 404 next-step links */
+.pills { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 2rem; }
+.pills a { border: 1px solid var(--line); border-radius: 99px; padding: .3rem .85rem; font-size: .85rem; color: var(--muted); text-decoration: none; transition: border-color .15s ease, color .15s ease; }
+.pills a:hover { border-color: var(--faint); color: var(--text); }
 
 /* system prompt (now box) */
 .system-prompt {
@@ -101,7 +116,7 @@ h2 { font-size: 1.35rem; line-height: 1.2; margin: 2.75rem 0 .75rem; }
 }
 .post-list li:last-child a { border-bottom: 1px solid var(--line); }
 .post-title { transition: color .15s ease; }
-.post-list a:hover .post-title { color: var(--muted); }
+@media (hover: hover) { .post-list a:hover .post-title { color: var(--muted); } }
 .post-meta { display: flex; gap: 1rem; flex-shrink: 0; font: .75rem var(--mono); color: var(--faint); }
 .post-meta span:last-child { min-width: 5.5rem; text-align: right; }
 .empty { color: var(--muted); }
@@ -158,9 +173,15 @@ footer a:hover { color: var(--text); }
   .post-meta span:last-child { min-width: 0; text-align: left; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
+/* page transitions: only <main> crossfades, header and footer stay still */
+@view-transition { navigation: auto; }
+main { view-transition-name: page; }
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(page) { animation: .2s ease both vt-out; }
+  ::view-transition-new(page) { animation: .3s .05s ease both vt-in; }
 }
+@keyframes vt-out { to { opacity: 0; filter: blur(4px); } }
+@keyframes vt-in { from { opacity: 0; filter: blur(4px); } }
 
 /* numbered section headings inside posts */
 .post-body { counter-reset: section; }
@@ -207,7 +228,7 @@ footer a:hover { color: var(--text); }
 .fig-bar > div { display: flex; align-items: center; padding: 0 .6rem; }
 .fig-bar-agree { flex: 0 0 70%; background: var(--t0); color: var(--text); }
 .fig-bar-range { flex: 0 0 10%; background: repeating-linear-gradient(135deg, var(--t0) 0 4px, transparent 4px 8px); }
-.fig-bar-rest { flex: 1; background: var(--line); color: var(--muted); justify-content: flex-end; }
+.fig-bar-rest { flex: 1; min-width: 0; background: var(--line); color: var(--muted); justify-content: flex-end; }
 .fig-bar-scale { display: flex; justify-content: space-between; margin-top: .4rem; font: .7rem var(--mono); color: var(--faint); }
 .fig-bar-scale span:nth-child(2) { margin-left: 62%; margin-right: auto; }
 .fig-note { margin-top: .9rem !important; color: var(--muted); }
@@ -238,6 +259,7 @@ footer a:hover { color: var(--text); }
 
 @media (max-width: 520px) {
   .fig-versus, .fig-branches { grid-template-columns: 1fr; }
+  .fig-bar-rest { color: transparent; } /* no room for the label; scale and caption carry it */
   .fig-branches::before { display: none; }
   .post-body h2 { font-size: 1.35rem; }
 }
